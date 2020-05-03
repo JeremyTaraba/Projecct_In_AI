@@ -29,18 +29,35 @@ vector<int> puzzleMakerCustom(){
         puzzleToSolve.push_back(num);
     }
 
-    //output the final puzzle here, first output it to see where spaces are
- 
+    //output the entered puzzle
+    cout << "The puzzle you entered is: " << endl << endl;
+    for(int i = 0; i < puzzleToSolve.size(); i++){
+        cout << puzzleToSolve.at(i) << " ";
 
-    cout << endl;
+        if( ((i + 1) % 3) == 0){
+            cout << endl;
+        }
+    }
+
+    cout << endl << endl;
     return puzzleToSolve;
 }
 
 vector<int> puzzleMakerDefault(){
 
-    vector<int> puzzleToSolve;
+    vector<int> puzzleToSolve = {1, 0, 3, 4, 2, 6, 7, 5, 8};
 
-    //just output the final puzzle
+    //output the default puzzle
+    cout << "The default puzzle is: " << endl << endl;
+    for(int i = 0; i < puzzleToSolve.size(); i++){
+        cout << puzzleToSolve.at(i) << " ";
 
+        if( ((i + 1) % 3) == 0){
+            cout << endl;
+        }
+        
+    }
+
+    cout << endl << endl;
     return puzzleToSolve;
 }
