@@ -1,4 +1,7 @@
 #include "prompt.h"
+#include "puzzleMaker.h"
+#include <vector>
+#include <iostream>
 
 using namespace std;
 
@@ -7,20 +10,34 @@ using namespace std;
 int main(){
 
     int puzzleType;
+    vector<int> puzzleToSolve;
+    int algorithmType;
 
     //prompt for puzzle type
-    puzzleType = prompt();
+    puzzleType = promptPuzzleType();
+
+    //generate the puzzle based on puzzle type
     if(puzzleType == 1){
-        cout << "Enter puzzle with spaces between numbers" << endl;
-        cin >> str;
+        //just outputs the default puzzle
+        puzzleToSolve = puzzleMakerDefault();
     }
     if(puzzleType == 2){
-
+        puzzleToSolve = puzzleMakerCustom();
     }
 
     //choose algorithm
+    algorithmType = promptAlgorithmType();
 
     //solve
+    if(algorithmType == 1){
+
+    }
+    else if(algorithmType == 2){
+        
+    }
+    else if(algorithmType == 3){
+        
+    }
 
     return 0;
 }

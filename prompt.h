@@ -1,7 +1,8 @@
 #ifndef PROMPT_H_
 #define PROMPT_H_
 
-int prompt();
+int promptPuzzleType();
+int promptAlgorithmType();
 
 
 #endif
