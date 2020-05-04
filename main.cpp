@@ -1,5 +1,6 @@
 #include "prompt.h"
 #include "puzzleMaker.h"
+#include "uniformCost.h"
 #include <vector>
 #include <iostream>
 
@@ -39,7 +40,7 @@ int main(){
         //do A* with Euclidean distance heuristic
     }
 
-    
+
 
     return 0;
 }
