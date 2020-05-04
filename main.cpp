@@ -30,14 +30,16 @@ int main(){
 
     //solve
     if(algorithmType == 1){
-
+        //do uniform cost search
     }
     else if(algorithmType == 2){
-        
+        //do A* with missplaced tile heuristic
     }
     else if(algorithmType == 3){
-        
+        //do A* with Euclidean distance heuristic
     }
+
+    
 
     return 0;
 }
