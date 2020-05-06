@@ -3,21 +3,15 @@
 #include <iostream>
 #include <vector>
 #include <queue>
-#include <functional> //need for priority_queue to be used as min heap (greater<int>)
 
 using namespace std;
 
-bool compare(linkedList *lhs, linkedList *rhs){
-    return lhs->cost < rhs->cost;
-}
-
-// this is an strucure which implements the 
-// operator overlading 
+//creates operator overloading for priority_queue
 struct compare { 
     bool operator()(linkedList *lhs, linkedList *rhs) 
     { 
-        // return true if lhs is less than rhs
-        return lhs->cost < rhs->cost;
+        // returns true where top of queue is less than what is under it
+        return lhs->cost > rhs->cost;
     } 
 }; 
 
@@ -26,12 +20,12 @@ bool uniformCostSearch(vector<int> puzzle){
     linkedList *curNode = createNode(puzzle, 0, NULL); //initial state with cost = 0 and parent = NULL
 
     //min cost queue
-    priority_queue <linkedList, vector<linkedList>, compare> frontier;  
+    priority_queue <linkedList*, vector<linkedList*>, compare> frontier;  
 
     //keep track of past puzzle states so we dont revisit them
     vector<int> explored;   
 
-     //generate goal state for differing sizes of puzzles
+     //generate goal state based on differing sizes of puzzles
      vector<int> goal;
      for(int i = 0; i < puzzle.size(); i++){
          if(i == puzzle.size() - 1){
@@ -76,7 +70,6 @@ void finalOutput(int expandNodes, int queueNodes){
     cout << "To solve this problem the search algorithm expanded a total of " << expandNodes << " nodes" << endl;
     cout << "The maximum number of nodes in the queue at any one time: " << queueNodes << endl;
 
-    return 0;
 }
 
 bool goalChecker(vector<int> puzzle, vector<int> goal){
@@ -91,6 +84,25 @@ bool goalChecker(vector<int> puzzle, vector<int> goal){
 }
 
 int main(){
+    vector<int> puzzle = {1,2,3,4,5,6,7,8,0};
+
+    linkedList* curNode = createNode(puzzle, 5, NULL);
+    linkedList* curNode2 = createNode(puzzle, 7, NULL);
+    linkedList* curNode3 = createNode(puzzle, 3, NULL);
+    priority_queue <linkedList*, vector<linkedList*>, compare> frontier;  
+    frontier.push(curNode);
+    frontier.push(curNode2);
+    frontier.push(curNode3);
+    cout << "top = " << frontier.top()->cost << endl;
+    frontier.pop();
+    cout << "next = " << frontier.top()->cost << endl;
+    frontier.pop();
+    cout << "last = " << frontier.top()->cost << endl;
+
+    if(goalChecker(curNode->state, puzzle)){
+        cout << "Goal!!" << endl;
+    }
+
 
 
     return 0;
