@@ -9,9 +9,11 @@ struct linkedList {
     int cost;
     vector<int> state;
     linkedList *next;
+    linkedList *prev;
 }; 
 
-linkedList* createNode(vector<int>, int);
+linkedList* createNode(vector<int>, int, linkedList*);
+void setNext(linkedList*, linkedList*);
 
 
 
