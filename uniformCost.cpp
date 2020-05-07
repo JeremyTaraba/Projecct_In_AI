@@ -72,7 +72,6 @@ bool uniformCostSearch(vector<int> puzzle){
      //should create a deallocator function and manually delete root node so no leaks
 
     while(1){
-        cout << endl <<"top of loop" << endl;
         if(frontier.empty()){
             return false;
         }
@@ -102,40 +101,20 @@ bool uniformCostSearch(vector<int> puzzle){
             inFrontier = frontierChecker(nextState, frontier); 
             inExplored = exploredChecker(nextState, explored);
 
-             cout << "infrontier: ";
-             if(inFrontier){
-                 cout << "true" << endl;
-             }
-             else{
-                 cout << "false" << endl;
-             }
-             cout << "inexplored: ";
-             if(inExplored){
-                 cout << "true" << endl;
-             }
-             else{
-                 cout << "false" << endl;
-             }
 
             if(!inFrontier && !inExplored){   //if child node is not in frontier and not in explored
                 childNode = createNode(nextState, 0, 0);
                 childNode->prev = parentNode;
-                cout << "before cost function first if" << endl;
                 childNodeCost = costFunction(childNode);
-                cout << "after cost function first if" << endl;
                 childNode->gn = childNodeCost.at(0);  
                 childNode->hn = childNodeCost.at(1);  
                 childNode->cost = childNodeCost.at(2);
-                cout << "before frontier.push" << endl;
                 frontier.push(childNode);
-                cout << "after frontier.push" << endl;
             }
             else if(inFrontier){     //else if in frontier but the one in frontier has a higher path cost then replace it with this childNode
                 childNode = createNode(nextState, 0, 0);
                 childNode->prev = parentNode;
-                cout << "before cost function second if" << endl;
                 childNodeCost = costFunction(childNode);
-                cout << "after cost function second if" << endl;
                 nodeCost = childNodeCost.at(2);
                 identicalFrontierCost = frontierCost(nextState, frontier);
                 if(nodeCost < identicalFrontierCost){
@@ -202,7 +181,7 @@ void finalOutput(linkedList* finalNode, int expandNodes, int queueNodes){
         solutionPath.push(finalNode);
     }
     stateToPrint = solutionPath.top()->state;
-    cout << "expanding state: " << endl;
+    cout << endl <<"expanding state: " << endl;
     for(int i = 0; i < stateToPrint.size(); i++){
         cout << stateToPrint.at(i) << " ";
         if( ((i + 1) % 3) == 0){
@@ -281,12 +260,6 @@ vector<int> frontierCheckerAndCost(vector<int> nextState, priority_queue <linked
     }
 
     //if counter is  the same as frontier.size() then there was no 100% match
-
-
-    //test//
-    cout << "NotEqual: " << countNotEqual << "   ==   " << "frontierSize: " << frontierSize << endl;
-    //test//
-
     if(countNotEqual == frontierSize){
         inFrontierAndCost.push_back(0);
     }
@@ -373,8 +346,8 @@ vector<int> findMoves(int zeroLocation, int puzzleSize){
         possibleMoves.push_back(DOWN);
     }
     else if(zeroLocation == (puzzleSize - sqrt(puzzleSize) + 1) ){     //if 0 is at the start of the last row
-        possibleMoves.push_back(LEFT);
-        possibleMoves.push_back(DOWN);
+        possibleMoves.push_back(UP);
+        possibleMoves.push_back(RIGHT);
     }
     else if( (zeroLocation > (puzzleSize - sqrt(puzzleSize) + 1) ) && (zeroLocation < puzzleSize) ){     //if 0 is between the bottom right corner and bottom left corner
         possibleMoves.push_back(LEFT);
