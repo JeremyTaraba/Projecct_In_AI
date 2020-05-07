@@ -4,6 +4,7 @@
 #include <vector>
 #include <queue>
 #include <math.h>
+#include <stack>          
 
 using namespace std;
 
@@ -28,10 +29,11 @@ int frontierCost(vector<int>, priority_queue <linkedList*, vector<linkedList*>, 
 vector<int> frontierCheckerAndCost(vector<int> nextState, priority_queue<linkedList*, vector<linkedList*>, compare> frontier);
 bool frontierChecker(vector<int>, priority_queue<linkedList*, vector<linkedList*>, compare>);
 priority_queue <linkedList*, vector<linkedList*>, compare> replaceFrontierElement(linkedList*, priority_queue <linkedList*, vector<linkedList*>, compare>);
+void finalOutput(int, int, linkedList*);
 
 
 bool uniformCostSearch(vector<int> puzzle){
-    linkedList *curNode = createNode(puzzle, 0, NULL); //initial state with cost = 0 and parent = NULL
+    linkedList *curNode = createNode(puzzle, 0, 0, NULL); //initial state with cost = 0 and parent = NULL
 
     //min cost queue
     priority_queue <linkedList*, vector<linkedList*>, compare> frontier;  
@@ -61,6 +63,8 @@ bool uniformCostSearch(vector<int> puzzle){
      bool inFrontier;
      bool inExplored;
      int nodeCost;
+     int g_n;
+     int h_n;
 
      //first iteration of while loop creates a copy of root node.
      //should create a deallocator function and manually delete root node so no leaks
@@ -69,10 +73,13 @@ bool uniformCostSearch(vector<int> puzzle){
         if(frontier.empty()){
             return false;
         }
-        curNode = createNode(frontier.top()->state, 0, parentNode);
+        g_n = costFunction(curNode).at(0);
+        h_n = costFunction(curNode).at(1);
+        curNode = createNode(frontier.top()->state, g_n, h_n, parentNode);
 
         frontier.pop();
         if(goalChecker(curNode->state, goal)){
+            //print path to solved puzzle
             return true;
         }
         explored.push_back(curNode->state);
@@ -88,7 +95,6 @@ bool uniformCostSearch(vector<int> puzzle){
             inExplored = exploredChecker(nextState, explored);
 
             if(!inFrontier && !inExplored){   //if child node is not in frontier and not in explored
-                cout << "pushing it onto frontier" << endl;
                 nodeCost = costFunction(parentNode);
                 childNode = createNode(nextState, nodeCost, parentNode);
                 frontier.push(childNode);
@@ -112,8 +118,12 @@ bool uniformCostSearch(vector<int> puzzle){
 }
 
 //distance from initial state
-int costFunction(linkedList *parentNode ){
-    return parentNode->cost + 1;
+vector<int> costFunction(linkedList *parentNode ){
+    vector<int> nodeCost;
+    nodeCost.push_back(parentNode->gn + 1);
+    nodeCost.push_back(parentNode->hn);
+    nodeCost.push_back(parentNode->gn + 1 + parentNode->hn);
+    return nodeCost;
 }
 
 vector<int> possibleStates(vector<int> puzzle, vector<int> possibleMoves, int index, int locationOfZero){
@@ -154,7 +164,39 @@ vector<int> possibleStates(vector<int> puzzle, vector<int> possibleMoves, int in
     return changedPuzzle;
 }
 
-void finalOutput(int expandNodes, int queueNodes){
+void finalOutput(int expandNodes, int queueNodes, linkedList* finalNode){
+    stack<linkedList*> solutionPath;
+    solutionPath.push(finalNode);
+    vector<int> stateToPrint;
+    int gn;
+    int hn;
+    while(finalNode->cost != 0){
+        finalNode = finalNode->prev;
+        solutionPath.push(finalNode);
+    }
+    stateToPrint = solutionPath.top()->state;
+    cout << "exapnding state: " << endl;
+    for(int i = 0; i < stateToPrint.size(); i++){
+        cout << stateToPrint.at(i) << " ";
+        if( ((i + 1) % 3) == 0){
+            cout << endl;
+        }
+    }
+    solutionPath.pop();
+
+    while(!solutionPath.empty()){
+        stateToPrint = solutionPath.top()->state;
+        cout << "The best state to expand with g(n) = << " << stateToPrint->cost << " and h(n) = " << 4 << " is " << endl;
+        for(int i = 0; i < stateToPrint.size(); i++){
+            cout << stateToPrint.at(i) << " ";
+            if( ((i + 1) % 3) == 0){
+                cout << endl;
+            }
+        }
+    }
+
+
+
     cout << "goal!" << endl;
     cout << "To solve this problem the search algorithm expanded a total of " << expandNodes << " nodes" << endl;
     cout << "The maximum number of nodes in the queue at any one time: " << queueNodes << endl;

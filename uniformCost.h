@@ -8,7 +8,6 @@
 using namespace std;
 
 bool uniformCostSearch(vector<int>);
-void finalOutput(int, int);
 bool goalChecker(vector<int>, vector<int>);
 bool exploredChecker(vector<int>, vector<vector<int>>);
 int findLocationOfZero(vector<int>);

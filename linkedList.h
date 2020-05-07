@@ -7,6 +7,8 @@ using namespace std;
 
 struct linkedList {
     int cost;
+    int hn;
+    int gn;
     vector<int> state;
     linkedList *next;
     linkedList *prev;
