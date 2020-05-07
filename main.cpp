@@ -31,7 +31,12 @@ int main(){
 
     //solve
     if(algorithmType == 1){
-        //do uniform cost search
+        if(uniformCostSearch(puzzleToSolve)){
+            cout << "solved the puzzle" << endl;
+        }
+        else{
+            cout << "error" << endl;
+        }
     }
     else if(algorithmType == 2){
         //do A* with missplaced tile heuristic

@@ -7,10 +7,6 @@
 
 using namespace std;
 
-const int LEFT = 0;
-const int UP = 1;
-const int RIGHT = 2;
-const int DOWN = 3;
 
 //creates operator overloading for priority_queue
 struct compare { 
@@ -20,6 +16,17 @@ struct compare {
         return lhs->cost > rhs->cost;
     } 
 }; 
+
+
+const int LEFT = 0;
+const int UP = 1;
+const int RIGHT = 2;
+const int DOWN = 3;
+
+int costFunction(linkedList*);
+int frontierCost(vector<int>, priority_queue <linkedList*, vector<linkedList*>, compare>);
+vector<int> frontierCheckerAndCost(vector<int> nextState, priority_queue<linkedList*, vector<linkedList*>, compare> frontier);
+bool frontierChecker(vector<int>, priority_queue<linkedList*, vector<linkedList*>, compare>);
 
 
 bool uniformCostSearch(vector<int> puzzle){
@@ -46,29 +53,98 @@ bool uniformCostSearch(vector<int> puzzle){
      frontier.push(curNode);
      linkedList *parentNode = NULL;
      linkedList *childNode;
+     int identicalFrontierCost;
+     vector<int> possibleMoves;
+     vector<int> nextState;
+     int locationOfZero;
+     bool inFrontier;
+     bool inExplored;
+     int nodeCost;
 
      //first iteration of while loop creates a copy of root node.
      //should create a deallocator function and manually delete root node so no leaks
 
-    // while(1){
-    //     if(frontier.empty()){
-    //         return false;
-    //     }
-    //     curNode = createNode(frontier.top()->state, 0, parentNode);
-    //     frontier.pop();
-    //     if(goalChecker(curNode->state, goal)){
-    //         return true;
-    //     }
-    //     explored.push_back(curNode->state);
-    //     for(//each different move we can do based on 0){
-    //         childNode = ;//one of the next states we can create
-    //         //for loop to check if child node is in frontier or if it is in explored
-    //         //else frontier.push(childNode);
-    //         //else if in frontier but the one in frontier has a higher path cost then replace it with this childNode
-    //     }
+    while(1){
+        if(frontier.empty()){
+            return false;
+        }
+        curNode = createNode(frontier.top()->state, 0, parentNode);
+        frontier.pop();
+        if(goalChecker(curNode->state, goal)){
+            return true;
+        }
+        explored.push_back(curNode->state);
+        locationOfZero = findLocationOfZero(curNode->state);
+        possibleMoves = findMoves(locationOfZero, curNode->state.size());
+        parentNode = curNode;
+        for(int i = 0; i < possibleMoves.size(); i++){
+            nextState = possibleStates(curNode->state, possibleMoves, i, locationOfZero); //one of the next states we can create 
+            inFrontier = frontierChecker(nextState, frontier); 
+            inExplored = exploredChecker(nextState, explored);
+            if(!inFrontier && !inExplored){   //if child node is not in frontier and not in explored
+                nodeCost = costFunction(parentNode);
+                childNode = createNode(nextState, nodeCost, parentNode);
+                frontier.push(childNode);
+                curNode->next = childNode;
+            }
+            else if(inFrontier){     //else if in frontier but the one in frontier has a higher path cost then replace it with this childNode
+                nodeCost = costFunction(parentNode);
+                identicalFrontierCost = frontierCost(nextState, frontier);
+                if(nodeCost < identicalFrontierCost){
+                    childNode = createNode(nextState, nodeCost, parentNode);
+                    //swap frontier node with childNode
+                    curNode->next = childNode;
+                }
+            }
+           
+        }
+    }
 
-
+    //never reached
     return true;
+}
+
+//distance from initial state
+int costFunction(linkedList *parentNode ){
+    return parentNode->cost + 1;
+}
+
+vector<int> possibleStates(vector<int> puzzle, vector<int> possibleMoves, int index, int locationOfZero){
+    int indexOfZero = locationOfZero - 1;
+    int blankSpace;
+    int swapValue;
+    vector<int> changedPuzzle = puzzle;
+
+    switch(possibleMoves.at(index)){    //checking if we move left, right, up, or down next
+        case 0:     //case for moving 0 left
+            blankSpace = changedPuzzle.at(indexOfZero);
+            swapValue = changedPuzzle.at(indexOfZero - 1);
+            changedPuzzle.at(indexOfZero) = swapValue;
+            changedPuzzle.at(indexOfZero - 1) = blankSpace;
+            break;
+        case 1:     //case for moving zero up
+            blankSpace = changedPuzzle.at(indexOfZero);
+            swapValue = changedPuzzle.at(indexOfZero - sqrt(changedPuzzle.size()));
+            changedPuzzle.at(indexOfZero) = swapValue;
+            changedPuzzle.at(indexOfZero - sqrt(changedPuzzle.size())) = blankSpace;
+            break;
+        case 2:     //case for moving zero right
+            blankSpace = changedPuzzle.at(indexOfZero);
+            swapValue = changedPuzzle.at(indexOfZero + 1);
+            changedPuzzle.at(indexOfZero) = swapValue;
+            changedPuzzle.at(indexOfZero + 1) = blankSpace;
+            break;
+        case 3:     //case for moving zero down
+            blankSpace = changedPuzzle.at(indexOfZero);
+            swapValue = changedPuzzle.at(indexOfZero + sqrt(changedPuzzle.size()));
+            changedPuzzle.at(indexOfZero) = swapValue;
+            changedPuzzle.at(indexOfZero + sqrt(changedPuzzle.size())) = blankSpace;
+            break;
+        default:
+            cout << "error!" << endl;
+    }
+
+    return changedPuzzle;
 }
 
 void finalOutput(int expandNodes, int queueNodes){
@@ -91,6 +167,78 @@ bool exploredChecker(vector<int> curNode, vector<vector<int>> explored){
 
     //we went through all puzzles in explored. if not equal then we had a match so return true
     return exploreCounter != explored.size();
+}
+
+bool frontierChecker(vector<int> nextState, priority_queue<linkedList*, vector<linkedList*>, compare> frontier){    //check that frontier doesnt get mess up when returned
+    vector<int> inFrontier = frontierCheckerAndCost(nextState, frontier);
+    return inFrontier.at(0);
+}
+
+int frontierCost(vector<int> nextState, priority_queue <linkedList*, vector<linkedList*>, compare> frontier){
+    vector<int> cost = frontierCheckerAndCost(nextState, frontier);
+    return cost.at(1);
+}
+
+vector<int> frontierCheckerAndCost(vector<int> nextState, priority_queue <linkedList*, vector<linkedList*>, compare> frontier){
+    int countNotEqual = 0;
+    vector<int> inFrontierAndCost;
+    int sameStateCost;
+
+    vector<int> frontierState;
+    for(int i = 0; i < frontier.size(); i++){
+        frontierState = frontier.top()->state;
+        for(int j = 0; j < frontierState.size(); j++){
+            if(nextState.at(j) != frontierState.at(j)){
+                countNotEqual++;
+                break;
+            }
+        }
+        if(i != countNotEqual-1){
+            sameStateCost = frontier.top()->cost;
+            break;
+        }
+        frontier.pop();       
+    }
+
+    //if counter is not the same as frontier.size() then there was a match somewhere
+    if(countNotEqual != frontier.size()){
+        inFrontierAndCost.push_back(1);
+    }
+    else{
+        inFrontierAndCost.push_back(0);
+    }
+    inFrontierAndCost.push_back(sameStateCost);
+
+    return inFrontierAndCost;
+}
+
+//could use pass by reference here
+priority_queue <linkedList*, vector<linkedList*>, compare> replaceFrontierElement(linkedList *childNode, priority_queue <linkedList*, vector<linkedList*>, compare> frontier){
+    priority_queue <linkedList*, vector<linkedList*>, compare> changedFrontier;
+    vector<int> nextState = childNode->state;
+
+    int countNotEqual = 0;
+    vector<int> frontierState;
+    for(int i = 0; i < frontier.size(); i++){
+        frontierState = frontier.top()->state;
+        for(int j = 0; j < frontierState.size(); j++){
+            if(nextState.at(j) != frontierState.at(j)){
+                countNotEqual++;
+                break;
+            }
+        }
+        if(i != countNotEqual-1){
+            frontier.pop();
+        }
+        else{
+            changedFrontier.push(frontier.top());
+            frontier.pop();
+        }       
+    }
+    changedFrontier.push(childNode);
+
+
+    return changedFrontier;
 }
 
 
@@ -174,7 +322,7 @@ vector<int> findMoves(int zeroLocation, int puzzleSize){
 }
 
 
-
+/*
 
 int main(){
     vector<int> puzzle = {1,2,3,4,5,6,7,8,0};
@@ -185,10 +333,44 @@ int main(){
     linkedList* curNode = createNode(puzzle, 5, NULL);
     linkedList* curNode2 = createNode(puzzle2, 7, NULL);
     linkedList* curNode3 = createNode(puzzle, 3, NULL);
+    linkedList* curNode4 = createNode(puzzle2, 4, NULL);
     priority_queue <linkedList*, vector<linkedList*>, compare> frontier;  
     frontier.push(curNode);
     frontier.push(curNode2);
+    
+
+    
+
+    cout << "test frontierChecker for return false: ";
+    if(frontierChecker(curNode2->state, frontier)){
+        cout << "true" << endl;
+    }
+    else{
+        cout << "false" << endl;
+    }
+
+
+    cout << "test frontierCost is 5: ";
+    cout << frontierCost(curNode3->state, frontier) << endl;
+
+   
+    cout << "test frontierChecker for return true: ";
+    if(frontierChecker(curNode3->state, frontier)){
+        cout << "true" << endl;
+    }
+    else{
+        cout << "false" << endl;
+    }
     frontier.push(curNode3);
+
+
+
+    
+    frontier = replaceFrontierElement(curNode4, frontier);
+
+
+
+
     cout << "top = " << frontier.top()->cost << endl;
     frontier.pop();
     cout << "next = " << frontier.top()->cost << endl;
@@ -209,8 +391,24 @@ int main(){
         cout << "we have -not- explored puzzle already" << endl;
     }
 
+    cout << "location of zero should be 9: " << findLocationOfZero(curNode->state) << endl;
+   
+    vector<int> a = findMoves(findLocationOfZero(curNode->state), curNode->state.size());
+    cout << "size of a should be 2: " << a.size() << endl;
+    cout << "moves for zero should be Left(0) and Up(1): ";
+    for(int i = 0; i < a.size(); i++){
+        cout << a.at(i) << " ";
+    }
+    cout << endl;
 
-    
+    vector<int> b = possibleStates(curNode->state, a, 0, 9);
+    linkedList *childNode = createNode(b, 0, NULL);
+    if(goalChecker(childNode->state, puzzle)){
+        cout << "Goal!!" << endl;
+    }
+    else{
+        cout << "no goal" << endl;
+    }
 
 
     if(goalChecker(curNode->state, puzzle)){
@@ -223,4 +421,4 @@ int main(){
 
 
     return 0;
-}
+} */
