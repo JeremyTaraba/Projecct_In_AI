@@ -27,6 +27,7 @@ int costFunction(linkedList*);
 int frontierCost(vector<int>, priority_queue <linkedList*, vector<linkedList*>, compare>);
 vector<int> frontierCheckerAndCost(vector<int> nextState, priority_queue<linkedList*, vector<linkedList*>, compare> frontier);
 bool frontierChecker(vector<int>, priority_queue<linkedList*, vector<linkedList*>, compare>);
+priority_queue <linkedList*, vector<linkedList*>, compare> replaceFrontierElement(linkedList*, priority_queue <linkedList*, vector<linkedList*>, compare>);
 
 
 bool uniformCostSearch(vector<int> puzzle){
@@ -66,46 +67,28 @@ bool uniformCostSearch(vector<int> puzzle){
 
     while(1){
         if(frontier.empty()){
-            cout <<"frontier is empty" << endl;
             return false;
         }
         curNode = createNode(frontier.top()->state, 0, parentNode);
-
-        //testing//
-        cout << endl;
-        cout << "printing out curNode: " << endl;
-        for(int i = 0; i < curNode->state.size(); i++){
-            cout << curNode->state.at(i) << " ";
-        }
-        cout << endl << endl;
-        //testing//
 
         frontier.pop();
         if(goalChecker(curNode->state, goal)){
             return true;
         }
         explored.push_back(curNode->state);
+
         locationOfZero = findLocationOfZero(curNode->state);
         possibleMoves = findMoves(locationOfZero, curNode->state.size());
         parentNode = curNode;
         for(int i = 0; i < possibleMoves.size(); i++){
+
             nextState = possibleStates(curNode->state, possibleMoves, i, locationOfZero); //one of the next states we can create 
-
-
-                //testing//
-            cout << endl;
-            cout << "# of possible moves: " << possibleMoves.size() << endl;
-            cout << "specific move for i: " << possibleMoves.at(i) << "   ";
-            cout << "printing out nextState: ";
-            for(int i = 0; i < curNode->state.size(); i++){
-                cout << curNode->state.at(i) << " ";
-            }
-            cout << endl << endl;
-            //testing//
 
             inFrontier = frontierChecker(nextState, frontier); 
             inExplored = exploredChecker(nextState, explored);
+
             if(!inFrontier && !inExplored){   //if child node is not in frontier and not in explored
+                cout << "pushing it onto frontier" << endl;
                 nodeCost = costFunction(parentNode);
                 childNode = createNode(nextState, nodeCost, parentNode);
                 frontier.push(childNode);
@@ -116,7 +99,7 @@ bool uniformCostSearch(vector<int> puzzle){
                 identicalFrontierCost = frontierCost(nextState, frontier);
                 if(nodeCost < identicalFrontierCost){
                     childNode = createNode(nextState, nodeCost, parentNode);
-                    //swap frontier node with childNode
+                    frontier = replaceFrontierElement(childNode, frontier);
                     curNode->next = childNode;
                 }
             }
@@ -145,11 +128,6 @@ vector<int> possibleStates(vector<int> puzzle, vector<int> possibleMoves, int in
             swapValue = changedPuzzle.at(indexOfZero - 1);
             changedPuzzle.at(indexOfZero) = swapValue;
             changedPuzzle.at(indexOfZero - 1) = blankSpace;
-            cout << "outputting changed puzzle: ";
-            for(int i = 0; i < changedPuzzle.size(); i++){
-                cout << changedPuzzle.at(i) << " ";
-            }
-            cout << endl;
             break;
         case 1:     //case for moving zero up
             blankSpace = changedPuzzle.at(indexOfZero);
