@@ -97,7 +97,7 @@ bool uniformCostSearch(vector<int> puzzle){
             inExplored = exploredChecker(nextState, explored);
 
             if(!inFrontier && !inExplored){   //if child node is not in frontier and not in explored
-                childNode = createNode(nextState, 0, 0,);
+                childNode = createNode(nextState, 0, 0);
                 childNodeCost = costFunction(childNode);
                 childNode->gn = childNodeCost.at(0);  
                 childNode->hn = childNodeCost.at(1);  
