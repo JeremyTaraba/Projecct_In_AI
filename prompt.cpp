@@ -37,7 +37,7 @@ int promptAlgorithmType(){
     bool inputError = true;
     while(inputError){
 
-        cout << "Enter your choice of algorithm" << endl;
+        cout << "Enter your choice of algorithm: " << endl;
         cout << "Uniform Cost Search. Enter a \"1\"" << endl;
         cout << "A* with the Misplaced Tile heuristic. Enter a \"2\"" << endl;
         cout << "A* with the Eucledian distance heuristic. Enter a \"3\"" << endl;
