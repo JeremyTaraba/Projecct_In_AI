@@ -45,7 +45,7 @@ vector<int> puzzleMakerCustom(){
 
 vector<int> puzzleMakerDefault(){
 
-    vector<int> puzzleToSolve = {1, 0, 3, 4, 2, 6, 7, 5, 8};
+    vector<int> puzzleToSolve = {1, 2, 3, 4, 5, 6, 7, 0, 8};
 
     //output the default puzzle
     cout << "The default puzzle is: " << endl << endl;

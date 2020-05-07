@@ -7,9 +7,6 @@
 
 using namespace std;
 
-
-int expandedTotal;
-int maxNodesinQueue;
 bool uniformCostSearch(vector<int>);
 void finalOutput(int, int);
 bool goalChecker(vector<int>, vector<int>);

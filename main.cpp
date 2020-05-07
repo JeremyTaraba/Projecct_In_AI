@@ -1,6 +1,7 @@
 #include "prompt.h"
 #include "puzzleMaker.h"
 #include "uniformCost.h"
+#include "linkedList.h"
 #include <vector>
 #include <iostream>
 
@@ -35,7 +36,7 @@ int main(){
             cout << "solved the puzzle" << endl;
         }
         else{
-            cout << "error" << endl;
+            cout << "error failed to solve puzzle" << endl;
         }
     }
     else if(algorithmType == 2){
