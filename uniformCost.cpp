@@ -33,7 +33,7 @@ void finalOutput(linkedList*, int, int);
 
 
 bool uniformCostSearch(vector<int> puzzle){
-    linkedList *curNode = createNode(puzzle, 0, 0, NULL); //initial state with cost = 0 and parent = NULL
+    linkedList *curNode = createNode(puzzle, 0, 0); //initial state with cost = 0 and parent = NULL
 
     //min cost queue
     priority_queue <linkedList*, vector<linkedList*>, compare> frontier;  
@@ -91,23 +91,22 @@ bool uniformCostSearch(vector<int> puzzle){
         parentNode = curNode;
         for(int i = 0; i < possibleMoves.size(); i++){
 
-            nextState = possibleStates(curNode->state, possibleMoves, i, locationOfZero); //one of the next states we can create 
+            nextState = possibleStates(parentNode->state, possibleMoves, i, locationOfZero); //one of the next states we can create 
 
             inFrontier = frontierChecker(nextState, frontier); 
             inExplored = exploredChecker(nextState, explored);
 
             if(!inFrontier && !inExplored){   //if child node is not in frontier and not in explored
-                childNode = createNode(nextState, 0, 0, parentNode);
+                childNode = createNode(nextState, 0, 0,);
                 childNodeCost = costFunction(childNode);
                 childNode->gn = childNodeCost.at(0);  
                 childNode->hn = childNodeCost.at(1);  
                 childNode->cost = childNodeCost.at(2);
                 frontier.push(childNode);
-                curNode->next = childNode;
-                childNode->prev = curNode;
+                childNode->prev = parentNode;
             }
             else if(inFrontier){     //else if in frontier but the one in frontier has a higher path cost then replace it with this childNode
-                childNode = createNode(nextState, 0, 0, parentNode);
+                childNode = createNode(nextState, 0, 0);
                 childNodeCost = costFunction(childNode);
                 nodeCost = childNodeCost.at(2);
                 identicalFrontierCost = frontierCost(nextState, frontier);
@@ -116,8 +115,7 @@ bool uniformCostSearch(vector<int> puzzle){
                     childNode->hn = childNodeCost.at(1);  
                     childNode->cost = childNodeCost.at(2);
                     frontier = replaceFrontierElement(childNode, frontier);
-                    curNode->next = childNode;
-                    childNode->prev = curNode;
+                    childNode->prev = parentNode;
                 }
             }
            
@@ -139,48 +137,29 @@ vector<int> costFunction(linkedList *parentNode ){
 
 vector<int> possibleStates(vector<int> puzzle, vector<int> possibleMoves, int index, int locationOfZero){
     int indexOfZero = locationOfZero - 1;
-    int blankSpace;
-    int swapValue;
     vector<int> changedPuzzle = puzzle;
-
+    int blankSpace = changedPuzzle.at(indexOfZero);
+    
     switch(possibleMoves.at(index)){    //checking if we move left, right, up, or down next
         case 0:     //case for moving 0 left
-            blankSpace = changedPuzzle.at(indexOfZero);
-            swapValue = changedPuzzle.at(indexOfZero - 1);
-            changedPuzzle.at(indexOfZero) = swapValue;
+            changedPuzzle.at(indexOfZero) = changedPuzzle.at(indexOfZero - 1);
             changedPuzzle.at(indexOfZero - 1) = blankSpace;
             break;
         case 1:     //case for moving zero up
-            blankSpace = changedPuzzle.at(indexOfZero);
-            swapValue = changedPuzzle.at(indexOfZero - sqrt(changedPuzzle.size()));
-            changedPuzzle.at(indexOfZero) = swapValue;
+            changedPuzzle.at(indexOfZero) = changedPuzzle.at(indexOfZero - sqrt(changedPuzzle.size()));
             changedPuzzle.at(indexOfZero - sqrt(changedPuzzle.size())) = blankSpace;
             break;
         case 2:     //case for moving zero right
-            blankSpace = changedPuzzle.at(indexOfZero);
-            swapValue = changedPuzzle.at(indexOfZero + 1);
-            changedPuzzle.at(indexOfZero) = swapValue;
+            changedPuzzle.at(indexOfZero) = changedPuzzle.at(indexOfZero + 1);
             changedPuzzle.at(indexOfZero + 1) = blankSpace;
             break;
         case 3:     //case for moving zero down
-            blankSpace = changedPuzzle.at(indexOfZero);
-            swapValue = changedPuzzle.at(indexOfZero + sqrt(changedPuzzle.size()));
-            changedPuzzle.at(indexOfZero) = swapValue;
+            changedPuzzle.at(indexOfZero) = changedPuzzle.at(indexOfZero + sqrt(changedPuzzle.size()));
             changedPuzzle.at(indexOfZero + sqrt(changedPuzzle.size())) = blankSpace;
             break;
         default:
             cout << "error!" << endl;
     }
-
-    //testing//
-    cout << "changedPuzzle: ";
-    for(int i = 0; i < changedPuzzle.size(); i++){
-        cout << changedPuzzle.at(i) << " ";
-            if( ((i + 1) % 3) == 0){
-                cout << endl;
-            }
-    }
-    //testing//
 
     return changedPuzzle;
 }
@@ -194,7 +173,7 @@ void finalOutput(linkedList* finalNode, int expandNodes, int queueNodes){
         solutionPath.push(finalNode);
     }
     stateToPrint = solutionPath.top()->state;
-    cout << "exapnding state: " << endl;
+    cout << "expanding state: " << endl;
     for(int i = 0; i < stateToPrint.size(); i++){
         cout << stateToPrint.at(i) << " ";
         if( ((i + 1) % 3) == 0){
@@ -253,6 +232,7 @@ vector<int> frontierCheckerAndCost(vector<int> nextState, priority_queue <linked
     int countNotEqual = 0;
     vector<int> inFrontierAndCost;
     int sameStateCost;
+    int frontierSize = frontier.size();
 
     vector<int> frontierState;
     for(int i = 0; i < frontier.size(); i++){
@@ -270,12 +250,12 @@ vector<int> frontierCheckerAndCost(vector<int> nextState, priority_queue <linked
         frontier.pop();       
     }
 
-    //if counter is not the same as frontier.size() then there was a match somewhere
-    if(countNotEqual != frontier.size()){
-        inFrontierAndCost.push_back(1);
+    //if counter is  the same as frontier.size() then there was no 100% match
+    if( (countNotEqual) == frontierSize){
+        inFrontierAndCost.push_back(0);
     }
     else{
-        inFrontierAndCost.push_back(0);
+        inFrontierAndCost.push_back(1);
     }
     inFrontierAndCost.push_back(sameStateCost);
 
@@ -353,20 +333,20 @@ vector<int> findMoves(int zeroLocation, int puzzleSize){
     }
     else if( (zeroLocation > 1) && (zeroLocation < sqrt(puzzleSize)) ){     //if 0 is between the top left corner and end of first row
         possibleMoves.push_back(LEFT);
-        possibleMoves.push_back(DOWN);
         possibleMoves.push_back(RIGHT);
+        possibleMoves.push_back(DOWN);
     }
-    else if(zeroLocation == (puzzleSize - sqrt(puzzleSize)) ){     //if 0 is at the start of the last row
+    else if(zeroLocation == (puzzleSize - sqrt(puzzleSize) + 1) ){     //if 0 is at the start of the last row
         possibleMoves.push_back(LEFT);
         possibleMoves.push_back(DOWN);
     }
-    else if( (zeroLocation > (puzzleSize - sqrt(puzzleSize)) ) && (zeroLocation < puzzleSize) ){     //if 0 is between the bottom right corner and bottom left corner
+    else if( (zeroLocation > (puzzleSize - sqrt(puzzleSize) + 1) ) && (zeroLocation < puzzleSize) ){     //if 0 is between the bottom right corner and bottom left corner
         possibleMoves.push_back(LEFT);
         possibleMoves.push_back(UP);
         possibleMoves.push_back(RIGHT);
     }
     else{   //zero is not in the first or last rows and is somewhere in the rows between
-        for(int i = 1; i < (1-sqrt(puzzleSize)); i++){
+        for(int i = 1; i < (sqrt(puzzleSize) - 1); i++){
             if(zeroLocation == (i*sqrt(puzzleSize) + 1) ){    //if 0 is start of a row
                 possibleMoves.push_back(UP);
                 possibleMoves.push_back(RIGHT);
@@ -374,13 +354,13 @@ vector<int> findMoves(int zeroLocation, int puzzleSize){
                 break;
             }
             else if(zeroLocation == ((i+1)*sqrt(puzzleSize)) ){   //if 0 is end of a row
-                possibleMoves.push_back(UP);
                 possibleMoves.push_back(LEFT);
+                possibleMoves.push_back(UP);
                 possibleMoves.push_back(DOWN);
             }
-            else if(zeroLocation > (i*sqrt(puzzleSize) + 1) && zeroLocation < ((i+1)*sqrt(puzzleSize))){    //if 0 is between start and end of row
-                possibleMoves.push_back(UP);
+            else if( (zeroLocation > (i*sqrt(puzzleSize) + 1)) && (zeroLocation < ((i+1)*sqrt(puzzleSize))) ){    //if 0 is between start and end of row
                 possibleMoves.push_back(LEFT);
+                possibleMoves.push_back(UP);
                 possibleMoves.push_back(RIGHT);
                 possibleMoves.push_back(DOWN);
             }

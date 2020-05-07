@@ -14,7 +14,7 @@ struct linkedList {
     linkedList *prev;
 }; 
 
-linkedList* createNode(vector<int>, int, int, linkedList*);
+linkedList* createNode(vector<int>, int, int);
 void setNext(linkedList*, linkedList*);
 
 

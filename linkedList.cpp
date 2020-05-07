@@ -4,16 +4,16 @@
 
 using namespace std;
 
-linkedList* createNode(vector<int> input, int g_n, int h_n, linkedList *parent){
+linkedList* createNode(vector<int> input, int g_n, int h_n){
     linkedList *node;      
     
     node = new linkedList; 
-    node->next = 0;  
+    node->next = NULL;      //actually dont need this
     node->gn = g_n;
     node->hn = h_n;
     node->cost = g_n + h_n;
     node->state = input;
-    node->prev = parent;
+    node->prev = NULL;
      
     return node;
 }
