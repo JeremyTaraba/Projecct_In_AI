@@ -72,13 +72,19 @@ bool uniformCostSearch(vector<int> puzzle){
      //should create a deallocator function and manually delete root node so no leaks
 
     while(1){
+        cout << endl <<"top of loop" << endl;
         if(frontier.empty()){
             return false;
         }
         curNode = frontier.top();
+        parentNode = frontier.top();
         if(frontierMax < frontier.size()){
             frontierMax = frontier.size();
         }
+
+       
+
+
         frontier.pop();
         if(goalChecker(curNode->state, goal)){
             finalOutput(curNode, explored.size(), frontierMax);
@@ -88,7 +94,7 @@ bool uniformCostSearch(vector<int> puzzle){
 
         locationOfZero = findLocationOfZero(curNode->state);
         possibleMoves = findMoves(locationOfZero, curNode->state.size());
-        parentNode = curNode;
+        
         for(int i = 0; i < possibleMoves.size(); i++){
 
             nextState = possibleStates(parentNode->state, possibleMoves, i, locationOfZero); //one of the next states we can create 
@@ -96,18 +102,40 @@ bool uniformCostSearch(vector<int> puzzle){
             inFrontier = frontierChecker(nextState, frontier); 
             inExplored = exploredChecker(nextState, explored);
 
+             cout << "infrontier: ";
+             if(inFrontier){
+                 cout << "true" << endl;
+             }
+             else{
+                 cout << "false" << endl;
+             }
+             cout << "inexplored: ";
+             if(inExplored){
+                 cout << "true" << endl;
+             }
+             else{
+                 cout << "false" << endl;
+             }
+
             if(!inFrontier && !inExplored){   //if child node is not in frontier and not in explored
                 childNode = createNode(nextState, 0, 0);
+                childNode->prev = parentNode;
+                cout << "before cost function first if" << endl;
                 childNodeCost = costFunction(childNode);
+                cout << "after cost function first if" << endl;
                 childNode->gn = childNodeCost.at(0);  
                 childNode->hn = childNodeCost.at(1);  
                 childNode->cost = childNodeCost.at(2);
+                cout << "before frontier.push" << endl;
                 frontier.push(childNode);
-                childNode->prev = parentNode;
+                cout << "after frontier.push" << endl;
             }
             else if(inFrontier){     //else if in frontier but the one in frontier has a higher path cost then replace it with this childNode
                 childNode = createNode(nextState, 0, 0);
+                childNode->prev = parentNode;
+                cout << "before cost function second if" << endl;
                 childNodeCost = costFunction(childNode);
+                cout << "after cost function second if" << endl;
                 nodeCost = childNodeCost.at(2);
                 identicalFrontierCost = frontierCost(nextState, frontier);
                 if(nodeCost < identicalFrontierCost){
@@ -115,7 +143,7 @@ bool uniformCostSearch(vector<int> puzzle){
                     childNode->hn = childNodeCost.at(1);  
                     childNode->cost = childNodeCost.at(2);
                     frontier = replaceFrontierElement(childNode, frontier);
-                    childNode->prev = parentNode;
+                   
                 }
             }
            
@@ -127,11 +155,11 @@ bool uniformCostSearch(vector<int> puzzle){
 }
 
 //distance from initial state
-vector<int> costFunction(linkedList *parentNode ){
+vector<int> costFunction(linkedList *childNode ){
     vector<int> nodeCost;
-    nodeCost.push_back(parentNode->gn + 1);
-    nodeCost.push_back(parentNode->hn);
-    nodeCost.push_back(parentNode->gn + 1 + parentNode->hn);
+    nodeCost.push_back(childNode->prev->gn + 1);
+    nodeCost.push_back(childNode->prev->hn);
+    nodeCost.push_back(childNode->prev->gn + 1 + childNode->prev->hn);
     return nodeCost;
 }
 
@@ -168,7 +196,8 @@ void finalOutput(linkedList* finalNode, int expandNodes, int queueNodes){
     stack<linkedList*> solutionPath;
     solutionPath.push(finalNode);
     vector<int> stateToPrint;
-    while(finalNode->prev != NULL){
+
+    while(finalNode->prev){
         finalNode = finalNode->prev;
         solutionPath.push(finalNode);
     }
@@ -233,25 +262,32 @@ vector<int> frontierCheckerAndCost(vector<int> nextState, priority_queue <linked
     vector<int> inFrontierAndCost;
     int sameStateCost;
     int frontierSize = frontier.size();
+    priority_queue <linkedList*, vector<linkedList*>, compare> frontierCopy = frontier;
 
     vector<int> frontierState;
-    for(int i = 0; i < frontier.size(); i++){
-        frontierState = frontier.top()->state;
+    for(int i = 0; i < frontierSize; i++){
+        frontierState = frontierCopy.top()->state;
         for(int j = 0; j < frontierState.size(); j++){
             if(nextState.at(j) != frontierState.at(j)){
                 countNotEqual++;
                 break;
             }
         }
-        if(i != countNotEqual-1){
-            sameStateCost = frontier.top()->cost;
+        if(i+1 != countNotEqual){
+            sameStateCost = frontierCopy.top()->cost;
             break;
         }
-        frontier.pop();       
+        frontierCopy.pop();       
     }
 
     //if counter is  the same as frontier.size() then there was no 100% match
-    if( (countNotEqual) == frontierSize){
+
+
+    //test//
+    cout << "NotEqual: " << countNotEqual << "   ==   " << "frontierSize: " << frontierSize << endl;
+    //test//
+
+    if(countNotEqual == frontierSize){
         inFrontierAndCost.push_back(0);
     }
     else{
