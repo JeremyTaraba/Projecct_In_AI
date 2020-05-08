@@ -34,8 +34,7 @@ vector<int> misplaceTile(linkedList*, vector<int>);
 int misplaceTileCost(vector<int>, vector<int>);
 vector<int> euclideanDistance(linkedList*, vector<int>);
 int euclideanDistanceCost(vector<int>, vector<int>);
-int goalVectorFinderX(int goalValue, vector<int> puzzle);
-int goalVectorFinderY(int goalValue, vector<int> puzzle);
+vector<int> goalVectorFinder(int goalValue, vector<int> puzzle);
 int frontierCost(vector<int>, priority_queue <linkedList*, vector<linkedList*>, compare>);
 vector<int> frontierCheckerAndCost(vector<int> nextState, priority_queue<linkedList*, vector<linkedList*>, compare> frontier);
 bool frontierChecker(vector<int>, priority_queue<linkedList*, vector<linkedList*>, compare>);
@@ -141,7 +140,7 @@ bool generalAlgorithm(vector<int> puzzle, int algorithmType){
     return true;
 }
 
-//distance from initial state
+//calls the correct algorithm based on the given algorithm type
 vector<int> costFunction(linkedList *childNode, vector<int> goal, int algorithmType){
     vector<int> nodeCost;
    switch(algorithmType){
@@ -160,23 +159,28 @@ vector<int> costFunction(linkedList *childNode, vector<int> goal, int algorithmT
    return nodeCost;
 }
 
+//computes the cost of uniformCost search
 vector<int> uniformCost(linkedList *childNode){
     vector<int> nodeCost;
+
     nodeCost.push_back(childNode->prev->gn + 1);
     nodeCost.push_back(0);
     nodeCost.push_back(childNode->prev->gn + 1 + childNode->prev->hn);
     return nodeCost;
 }
 
+//calls the correct h(n) function for A* misplaced tile
 vector<int> misplaceTile(linkedList *childNode, vector<int> goal){
     vector<int> nodeCost;
     int hn = misplaceTileCost(childNode->state, goal);
+
     nodeCost.push_back(childNode->prev->gn + 1);
     nodeCost.push_back(hn);
     nodeCost.push_back(childNode->prev->gn + 1 + hn);
     return nodeCost;
 }
 
+//computes the cost of misplaced tiles
 int misplaceTileCost(vector<int> puzzle, vector<int> goal){
     int misplaced = 0;     
     for(int i = 0; i < goal.size(); i++){
@@ -188,9 +192,11 @@ int misplaceTileCost(vector<int> puzzle, vector<int> goal){
     return misplaced;
 }
 
+//calls the correct h(n) function for A* Euclidean Distance
 vector<int> euclideanDistance(linkedList *childNode, vector<int> goal){
     vector<int> nodeCost;
     int hn = euclideanDistanceCost(childNode->state, goal);
+
     nodeCost.push_back(childNode->prev->gn + 1);
     nodeCost.push_back(hn);
     nodeCost.push_back(childNode->prev->gn + 1 + hn);
@@ -198,38 +204,47 @@ vector<int> euclideanDistance(linkedList *childNode, vector<int> goal){
 }
 
 
+//returns a vector containing x and y values for 
 //8 puzzle specifc for the Euclidean Search
 //to fix initialize goal state with vector values
-//for some reason using a vector to store x and y values didnt work so i have to use the same function twice
-int goalVectorFinderX(int goalValue, vector<int> puzzle){
-    int goalXValue = 0;
+vector<int> goalVectorFinder(int goalValue, vector<int> puzzle){
+    vector<int> goalXValue = {0, 0};
     switch(goalValue){
         case 0:
-            goalXValue = sqrt(puzzle.size()) - 1;
+            goalXValue.at(0) = sqrt(puzzle.size()) - 1;
+            goalXValue.at(1) = 0;
             break;
         case 1:
-            goalXValue = 0;
+            goalXValue.at(0) = 0;
+             goalXValue.at(1) = sqrt(puzzle.size()) - 1;
             break;
         case 2:
-            goalXValue = 1;
+            goalXValue.at(0) = 1;
+            goalXValue.at(1) = sqrt(puzzle.size()) - 1;
             break;
         case 3:
-            goalXValue = sqrt(puzzle.size()) - 1;
+            goalXValue.at(0) = sqrt(puzzle.size()) - 1;
+            goalXValue.at(1) = sqrt(puzzle.size()) - 1;
             break;
         case 4:
-            goalXValue = 0;
+            goalXValue.at(0) = 0;
+            goalXValue.at(1) = 1;
             break;
         case 5:
-            goalXValue = 1;
+            goalXValue.at(0) = 1;
+            goalXValue.at(1) = 1;
             break;
         case 6:
-            goalXValue = sqrt(puzzle.size()) - 1;
+            goalXValue.at(0) = sqrt(puzzle.size()) - 1;
+            goalXValue.at(1) = 1;
             break;
         case 7:
-            goalXValue = 0;
+            goalXValue.at(0) = 0;
+            goalXValue.at(1) = 0;
             break;
         case 8:
-            goalXValue = 1;
+            goalXValue.at(0) = 1;
+            goalXValue.at(1) = 0;
             break;
 
     }
@@ -237,42 +252,7 @@ int goalVectorFinderX(int goalValue, vector<int> puzzle){
     return goalXValue;
 }
 
-int goalVectorFinderY(int goalValue, vector<int> puzzle){
-    int goalYValue = 0;
-    switch(goalValue){
-        case 0:
-            goalYValue = 0;
-            break;
-        case 1:
-            goalYValue = sqrt(puzzle.size()) - 1;
-            break;
-        case 2:
-            goalYValue = sqrt(puzzle.size()) - 1;
-            break;
-        case 3:
-            goalYValue = sqrt(puzzle.size()) - 1;
-            break;
-        case 4:
-            goalYValue = 1;
-            break;
-        case 5:
-            goalYValue = 1;
-            break;
-        case 6:
-            goalYValue = 1;
-            break;
-        case 7:
-            goalYValue = 0;
-            break;
-        case 8:
-            goalYValue = 0;
-            break;
-
-    }
-
-    return goalYValue;
-}
-
+//computes the h(n) for euclideanDistance, unfortunately it is specific to the 8 puzzle and not applicable to other sizes //Note: figure out how to fix this later
 int euclideanDistanceCost(vector<int> puzzle, vector<int> goal){
     int distanceCost = 0; 
     int xVal = 0;
@@ -281,6 +261,7 @@ int euclideanDistanceCost(vector<int> puzzle, vector<int> goal){
     int valueLocation;
     int puzzleXValue = 0;
     int puzzleYValue = 0;
+    vector<int> goalValue = {0, 0};
     int goalXValue = 0;
     int goalYValue = 0;
     int puzzleSize = puzzle.size();
@@ -293,8 +274,9 @@ int euclideanDistanceCost(vector<int> puzzle, vector<int> goal){
             distanceCost = 0;
         }
         else{  
-            goalXValue = goalVectorFinderX(goal.at(i), puzzle);
-            goalYValue = goalVectorFinderY(goal.at(i), puzzle);
+            goalValue = goalVectorFinder(goal.at(i), puzzle);
+            goalXValue = goalValue.at(0);
+            goalYValue = goalValue.at(1);
             switch(puzzle.at(i)){
                 case 0:
                     puzzleXValue = 2;
@@ -345,16 +327,15 @@ int euclideanDistanceCost(vector<int> puzzle, vector<int> goal){
             else{
                 distanceCost = sqrt(pow(xVal,2) + pow(yVal,2));
             }
-           
         }
-        
         totalCost += distanceCost;
     }
 
     return totalCost;
 }
 
-
+//returns a changed vector after moving the original vector either left, up, right, or down based on location of zero
+//index is used here for states with multiple moves, want to move onto the next move
 vector<int> possibleStates(vector<int> puzzle, vector<int> possibleMoves, int index, int locationOfZero){
     int indexOfZero = locationOfZero - 1;
     vector<int> changedPuzzle = puzzle;
@@ -384,6 +365,8 @@ vector<int> possibleStates(vector<int> puzzle, vector<int> possibleMoves, int in
     return changedPuzzle;
 }
 
+
+//final output if the algorithm successfully solved the puzzle
 void finalOutput(linkedList* finalNode, int expandNodes, int queueNodes){
     stack<linkedList*> solutionPath;
     solutionPath.push(finalNode);
@@ -423,6 +406,7 @@ void finalOutput(linkedList* finalNode, int expandNodes, int queueNodes){
     cout << "The maximum number of nodes in the queue at any one time: " << queueNodes << endl;
 }
 
+//checks if the state has lalready been explored
 bool exploredChecker(vector<int> curNode, vector<vector<int>> explored){
     int exploreCounter = 0;     //keeps track of how many puzzles we checked
 
@@ -439,16 +423,19 @@ bool exploredChecker(vector<int> curNode, vector<vector<int>> explored){
     return exploreCounter != explored.size();
 }
 
+//checks if frontier has the given state already in it
 bool frontierChecker(vector<int> nextState, priority_queue<linkedList*, vector<linkedList*>, compare> frontier){    //check that frontier doesnt get mess up when returned
     vector<int> inFrontier = frontierCheckerAndCost(nextState, frontier);
     return inFrontier.at(0);
 }
 
+//returns the cost of the state within the frontier
 int frontierCost(vector<int> nextState, priority_queue <linkedList*, vector<linkedList*>, compare> frontier){
     vector<int> cost = frontierCheckerAndCost(nextState, frontier);
     return cost.at(1);
 }
 
+//returns a vector with index 0 being true or false and index 1 being the cost of the frontier state
 vector<int> frontierCheckerAndCost(vector<int> nextState, priority_queue <linkedList*, vector<linkedList*>, compare> frontier){
     int countNotEqual = 0;
     vector<int> inFrontierAndCost;
@@ -513,7 +500,7 @@ priority_queue <linkedList*, vector<linkedList*>, compare> replaceFrontierElemen
     return changedFrontier;
 }
 
-
+//checks if the current state is the same as goal
 bool goalChecker(vector<int> puzzle, vector<int> goal){
     bool goalReached = true;
     for(int i = 0; i < puzzle.size(); i++){
@@ -525,6 +512,7 @@ bool goalChecker(vector<int> puzzle, vector<int> goal){
     return goalReached;
 }
 
+//returns the location of zero, note this is just the index of zero + 1
 int findLocationOfZero(vector<int> puzzle){
     int moveCase = 1;
 
