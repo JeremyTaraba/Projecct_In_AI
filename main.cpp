@@ -1,6 +1,6 @@
 #include "prompt.h"
 #include "puzzleMaker.h"
-#include "uniformCost.h"
+#include "algorithms.h"
 #include "linkedList.h"
 #include <vector>
 #include <iostream>
@@ -31,22 +31,9 @@ int main(){
     algorithmType = promptAlgorithmType();
 
     //solve
-    if(algorithmType == 1){
-        if(uniformCostSearch(puzzleToSolve)){
-            cout << "solved the puzzle" << endl;
-        }
-        else{
-            cout << "error failed to solve puzzle" << endl;
-        }
+    if(!generalAlgorithm(puzzleToSolve, algorithmType)){
+        cout << "error failed to solve puzzle" << endl;
     }
-    else if(algorithmType == 2){
-        //do A* with missplaced tile heuristic
-    }
-    else if(algorithmType == 3){
-        //do A* with Euclidean distance heuristic
-    }
-
-
 
     return 0;
 }

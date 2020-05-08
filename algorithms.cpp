@@ -9,15 +9,11 @@
 using namespace std;
 
 
-//in the morning just change the layout and filenames and function names to be general and then we can add the other cost functions later. 
-//gonna need to pass in a value to algorithm which sends it to cost function to indicate which cost function to use
-
-
 //creates operator overloading for priority_queue
 struct compare { 
     bool operator()(linkedList *lhs, linkedList *rhs) 
     { 
-        // returns true where top of queue is less than what is under it
+        // returns true when top of queue is less than what is under it
         return lhs->cost > rhs->cost;
     } 
 }; 
@@ -28,7 +24,10 @@ const int UP = 1;
 const int RIGHT = 2;
 const int DOWN = 3;
 
-vector<int> costFunction(linkedList*);
+vector<int> costFunction(linkedList*, vector<int>, int);
+vector<int> uniformCost(linkedList*);
+vector<int> misplaceTile(linkedList*, vector<int>);
+int misplaceTileCost(vector<int>, vector<int>);
 int frontierCost(vector<int>, priority_queue <linkedList*, vector<linkedList*>, compare>);
 vector<int> frontierCheckerAndCost(vector<int> nextState, priority_queue<linkedList*, vector<linkedList*>, compare> frontier);
 bool frontierChecker(vector<int>, priority_queue<linkedList*, vector<linkedList*>, compare>);
@@ -36,7 +35,7 @@ priority_queue <linkedList*, vector<linkedList*>, compare> replaceFrontierElemen
 void finalOutput(linkedList*, int, int);
 
 
-bool uniformCostSearch(vector<int> puzzle){
+bool generalAlgorithm(vector<int> puzzle, int algorithmType){
     linkedList *curNode = createNode(puzzle, 0, 0); //initial state with cost = 0 and parent = NULL
 
     //min cost queue
@@ -85,9 +84,6 @@ bool uniformCostSearch(vector<int> puzzle){
             frontierMax = frontier.size();
         }
 
-       
-
-
         frontier.pop();
         if(goalChecker(curNode->state, goal)){
             finalOutput(curNode, explored.size(), frontierMax);
@@ -109,7 +105,7 @@ bool uniformCostSearch(vector<int> puzzle){
             if(!inFrontier && !inExplored){   //if child node is not in frontier and not in explored
                 childNode = createNode(nextState, 0, 0);
                 childNode->prev = parentNode;
-                childNodeCost = costFunction(childNode);
+                childNodeCost = costFunction(childNode, goal, algorithmType);
                 childNode->gn = childNodeCost.at(0);  
                 childNode->hn = childNodeCost.at(1);  
                 childNode->cost = childNodeCost.at(2);
@@ -118,7 +114,7 @@ bool uniformCostSearch(vector<int> puzzle){
             else if(inFrontier){     //else if in frontier but the one in frontier has a higher path cost then replace it with this childNode
                 childNode = createNode(nextState, 0, 0);
                 childNode->prev = parentNode;
-                childNodeCost = costFunction(childNode);
+                childNodeCost = costFunction(childNode, goal, algorithmType);
                 nodeCost = childNodeCost.at(2);
                 identicalFrontierCost = frontierCost(nextState, frontier);
                 if(nodeCost < identicalFrontierCost){
@@ -138,12 +134,50 @@ bool uniformCostSearch(vector<int> puzzle){
 }
 
 //distance from initial state
-vector<int> costFunction(linkedList *childNode ){
+vector<int> costFunction(linkedList *childNode, vector<int> goal, int algorithmType){
+    vector<int> nodeCost;
+   switch(algorithmType){
+       case 1:
+            nodeCost = uniformCost(childNode);
+            break;
+        case 2:
+            nodeCost = misplaceTile(childNode, goal);
+            break;
+        case 3:
+            //A*
+            break;
+        default:
+            cout << "error in algorithmType" << endl;
+   }
+   return nodeCost;
+}
+
+vector<int> uniformCost(linkedList *childNode){
     vector<int> nodeCost;
     nodeCost.push_back(childNode->prev->gn + 1);
-    nodeCost.push_back(childNode->prev->hn);
+    nodeCost.push_back(0);
     nodeCost.push_back(childNode->prev->gn + 1 + childNode->prev->hn);
     return nodeCost;
+}
+
+vector<int> misplaceTile(linkedList *childNode, vector<int> goal){
+    vector<int> nodeCost;
+    int hn = misplaceTileCost(childNode->state, goal);
+    nodeCost.push_back(childNode->prev->gn + 1);
+    nodeCost.push_back(hn);
+    nodeCost.push_back(childNode->prev->gn + 1 + hn);
+    return nodeCost;
+}
+
+int misplaceTileCost(vector<int> puzzle, vector<int> goal){
+    int misplaced = 0;     
+    for(int i = 0; i < goal.size(); i++){
+        if(puzzle.at(i) != goal.at(i)){
+            misplaced++;
+        }
+    }
+
+    return misplaced;
 }
 
 vector<int> possibleStates(vector<int> puzzle, vector<int> possibleMoves, int index, int locationOfZero){
