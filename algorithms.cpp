@@ -8,6 +8,10 @@
 
 using namespace std;
 
+//Note: might be better to have each node store whether it can move left, right, up , down
+//Note: also would be better to have a vector storing the x and y index for the euclidean distance
+
+//euclidean distance is the only thing making this program not applicable to other puzzle sizes;
 
 //creates operator overloading for priority_queue
 struct compare { 
@@ -28,6 +32,10 @@ vector<int> costFunction(linkedList*, vector<int>, int);
 vector<int> uniformCost(linkedList*);
 vector<int> misplaceTile(linkedList*, vector<int>);
 int misplaceTileCost(vector<int>, vector<int>);
+vector<int> euclideanDistance(linkedList*, vector<int>);
+int euclideanDistanceCost(vector<int>, vector<int>);
+int goalVectorFinderX(int goalValue, vector<int> puzzle);
+int goalVectorFinderY(int goalValue, vector<int> puzzle);
 int frontierCost(vector<int>, priority_queue <linkedList*, vector<linkedList*>, compare>);
 vector<int> frontierCheckerAndCost(vector<int> nextState, priority_queue<linkedList*, vector<linkedList*>, compare> frontier);
 bool frontierChecker(vector<int>, priority_queue<linkedList*, vector<linkedList*>, compare>);
@@ -144,7 +152,7 @@ vector<int> costFunction(linkedList *childNode, vector<int> goal, int algorithmT
             nodeCost = misplaceTile(childNode, goal);
             break;
         case 3:
-            //A*
+            nodeCost = euclideanDistance(childNode, goal);
             break;
         default:
             cout << "error in algorithmType" << endl;
@@ -179,6 +187,173 @@ int misplaceTileCost(vector<int> puzzle, vector<int> goal){
 
     return misplaced;
 }
+
+vector<int> euclideanDistance(linkedList *childNode, vector<int> goal){
+    vector<int> nodeCost;
+    int hn = euclideanDistanceCost(childNode->state, goal);
+    nodeCost.push_back(childNode->prev->gn + 1);
+    nodeCost.push_back(hn);
+    nodeCost.push_back(childNode->prev->gn + 1 + hn);
+    return nodeCost;
+}
+
+
+//8 puzzle specifc for the Euclidean Search
+//to fix initialize goal state with vector values
+//for some reason using a vector to store x and y values didnt work so i have to use the same function twice
+int goalVectorFinderX(int goalValue, vector<int> puzzle){
+    int goalXValue = 0;
+    switch(goalValue){
+        case 0:
+            goalXValue = sqrt(puzzle.size()) - 1;
+            break;
+        case 1:
+            goalXValue = 0;
+            break;
+        case 2:
+            goalXValue = 1;
+            break;
+        case 3:
+            goalXValue = sqrt(puzzle.size()) - 1;
+            break;
+        case 4:
+            goalXValue = 0;
+            break;
+        case 5:
+            goalXValue = 1;
+            break;
+        case 6:
+            goalXValue = sqrt(puzzle.size()) - 1;
+            break;
+        case 7:
+            goalXValue = 0;
+            break;
+        case 8:
+            goalXValue = 1;
+            break;
+
+    }
+
+    return goalXValue;
+}
+
+int goalVectorFinderY(int goalValue, vector<int> puzzle){
+    int goalYValue = 0;
+    switch(goalValue){
+        case 0:
+            goalYValue = 0;
+            break;
+        case 1:
+            goalYValue = sqrt(puzzle.size()) - 1;
+            break;
+        case 2:
+            goalYValue = sqrt(puzzle.size()) - 1;
+            break;
+        case 3:
+            goalYValue = sqrt(puzzle.size()) - 1;
+            break;
+        case 4:
+            goalYValue = 1;
+            break;
+        case 5:
+            goalYValue = 1;
+            break;
+        case 6:
+            goalYValue = 1;
+            break;
+        case 7:
+            goalYValue = 0;
+            break;
+        case 8:
+            goalYValue = 0;
+            break;
+
+    }
+
+    return goalYValue;
+}
+
+int euclideanDistanceCost(vector<int> puzzle, vector<int> goal){
+    int distanceCost = 0; 
+    int xVal = 0;
+    int yVal = 0;
+    int totalCost = 0;  
+    int valueLocation;
+    int puzzleXValue = 0;
+    int puzzleYValue = 0;
+    int goalXValue = 0;
+    int goalYValue = 0;
+    int puzzleSize = puzzle.size();
+
+    
+    for(int i = 0; i < goal.size(); i++){
+        if(puzzle.at(i) == goal.at(i)){     //is in the right spot
+            xVal = 0;
+            yVal = 0;
+            distanceCost = 0;
+        }
+        else{  
+            goalXValue = goalVectorFinderX(goal.at(i), puzzle);
+            goalYValue = goalVectorFinderY(goal.at(i), puzzle);
+            switch(puzzle.at(i)){
+                case 0:
+                    puzzleXValue = 2;
+                    puzzleYValue = 0;
+                    break;
+                case 1:
+                    puzzleXValue = 0;
+                    puzzleYValue = 2;
+                    break;
+                case 2:
+                    puzzleXValue = 1;
+                    puzzleYValue = 2;
+                    break;
+                case 3:
+                    puzzleXValue = 2;
+                    puzzleYValue = 2;
+                    break;
+                case 4:
+                    puzzleXValue = 0;
+                    puzzleYValue = 1;
+                    break;
+                case 5:
+                    puzzleXValue = 1;
+                    puzzleYValue = 1;
+                    break;
+                case 6:
+                    puzzleXValue = 2;
+                    puzzleYValue = 1;
+                    break;
+                case 7:
+                    puzzleXValue = 0;
+                    puzzleYValue = 0;
+                    break;
+                case 8:
+                    puzzleXValue = 0;
+                    puzzleYValue = 1;
+                    break;
+
+            }
+            xVal = abs(puzzleXValue - goalXValue);
+            yVal = abs(puzzleYValue - goalYValue);
+            if(xVal == 0){
+                distanceCost = sqrt(pow(yVal, 2));
+            }
+            else if(yVal == 0){
+                distanceCost = sqrt(pow(xVal, 2));
+            }
+            else{
+                distanceCost = sqrt(pow(xVal,2) + pow(yVal,2));
+            }
+           
+        }
+        
+        totalCost += distanceCost;
+    }
+
+    return totalCost;
+}
+
 
 vector<int> possibleStates(vector<int> puzzle, vector<int> possibleMoves, int index, int locationOfZero){
     int indexOfZero = locationOfZero - 1;
