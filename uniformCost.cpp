@@ -9,6 +9,10 @@
 using namespace std;
 
 
+//in the morning just change the layout and filenames and function names to be general and then we can add the other cost functions later. 
+//gonna need to pass in a value to algorithm which sends it to cost function to indicate which cost function to use
+
+
 //creates operator overloading for priority_queue
 struct compare { 
     bool operator()(linkedList *lhs, linkedList *rhs) 
