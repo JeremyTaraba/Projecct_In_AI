@@ -4,6 +4,7 @@
 #include "linkedList.h"
 #include <vector>
 #include <iostream>
+#include <chrono> 
 
 using namespace std;
 
@@ -30,10 +31,18 @@ int main(){
     //choose algorithm
     algorithmType = promptAlgorithmType();
 
+    //start timer
+    chrono::time_point<chrono::system_clock> start, end; 
+    start = chrono::system_clock::now(); 
+
     //solve
     if(!generalAlgorithm(puzzleToSolve, algorithmType)){
         cout << "error failed to solve puzzle" << endl;
     }
+    //end timer
+    end = chrono::system_clock::now();
+    chrono::duration<double> elapsed_seconds = end - start; 
+    cout << "total time: " << elapsed_seconds.count() << " seconds" << endl; 
 
     return 0;
 }
