@@ -1,6 +1,0 @@
-CS 170: Intro to Artificial Intelligence
-
-Project 1
-
-Solving the 8 piece puzzle and making it applicable to larger scaled puzzles.
-it should have some kind of output showing the steps the program is taking
