@@ -10,6 +10,8 @@ using namespace std;
 
 //all main does it call the correct functions
 
+//when redoing the file heirarchy make main the top
+
 int main(){
 
     int puzzleType;
