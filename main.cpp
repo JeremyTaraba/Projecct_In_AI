@@ -11,6 +11,7 @@ using namespace std;
 //all main does it call the correct functions
 
 //when redoing the file heirarchy make main the top
+//prompt and puzzleMaker can be merged into one file but not a big deal if they are separate, just update header files to reflect the functions called in main
 
 int main(){
 
