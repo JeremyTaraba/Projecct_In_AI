@@ -6,7 +6,7 @@
 using namespace std;
 
 struct point {
-    int class;
+    int classification;
     vector<int> features;  
 };
 
@@ -31,6 +31,8 @@ int nearestNeighborClassifier(){
 
 
 int main(){
+
+    //First read in data and make training set?
 
 
     return 0;
