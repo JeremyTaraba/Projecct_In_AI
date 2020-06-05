@@ -86,7 +86,8 @@ int main(int argc, char *argv[]){
         }
     }
     vector<point> Data = import_data(filename);     //read in data points and store in a vector
-   
+    cout << "Class: " << Data.at(0).classification << endl;
+    cout << "first feature: " << Data.at(0).features.at(0) << endl;
 
 
 
