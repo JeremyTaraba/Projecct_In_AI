@@ -9,7 +9,7 @@ using namespace std;
 
 struct point {
     int classification;
-    vector<int> features;  
+    vector<double> features;  
 };
 
 //Create nearest neighbor classifier (keep training data in memory and when new data point is given classify it)
@@ -61,17 +61,18 @@ int main(int argc, char *argv[]){
     infile.open(filename);
     vector<point> Data;
     string line;
+    double instance_feature;
     if(infile.is_open()){
         while(getline(infile, line)){
             point instance;              //create new point
             istringstream iss(line);    //covert string to int
             iss >> instance.classification;  //put class into classification
+            while(iss >> instance_feature){      //put all features into the feature vector
+                instance.features.push_back(instance_feature);
+            }
             
-           
+            //put finished instance into vector of data
             
-            
-            //put all features into the feature vector
-            for()
         }
     }
 
