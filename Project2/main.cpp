@@ -5,6 +5,11 @@
 #include <fstream>
 #include <string>
 #include <sstream>
+#include <algorithm>
+
+//just for testing
+#include <stdlib.h>     /* srand, rand */
+#include <time.h>       /* time */
 
 using namespace std;
 
@@ -12,6 +17,7 @@ struct point {
     int classification;
     vector<double> features;  
 };
+
 
 //Create nearest neighbor classifier (keep training data in memory and when new data point is given classify it)
 //need to normalize the untis. Do this by Feature1 = (feature1_value - mean(feature1)) / stddev(feature1)
@@ -23,16 +29,45 @@ int nearestNeighborClassifier(/* Chosen_Feature_indexes, point*/){
     //then calculate distances and find nearest neighbor
     //return classification
 
-    return 1;
+    return rand() % 2 + 1;
 }
 
 
 
 
 //Create Leave one out validator (need training data and the classifier)
+float leaveOneOutValidator(vector<point> Data, vector<int> current_features, int feature_to_add){
+    float accuracy = 0.0;
+    
+
+
+    return accuracy;
+}
 
 
 //Create Forward search algorithm (adds or removes features and assigns accuracy score to the combinations and chooses highest one)
+vector<int> forwardSearchAlgorithm(vector<point> Data){
+    double accuracy = 0;
+    vector<int> current_set_of_features;
+    
+
+    for(int i = 0; i < Data.at(0).features.size(); i++){
+        int feature_to_add;
+        double best_accuracy_so_far = 0.0;
+        
+        for(int k = 0; k < Data.at(0).features.size(); k++){
+            if(find(current_set_of_features.begin(), current_set_of_features.end(), k) == current_set_of_features.end()){  //if k is not in current features
+                accuracy = leaveOneOutValidator(Data, current_set_of_features, k);
+                if(accuracy > best_accuracy_so_far){
+                    best_accuracy_so_far = accuracy;
+                    feature_to_add = k+1;
+                }
+            }   
+        }
+        current_set_of_features.push_back(feature_to_add);
+    }
+    return current_set_of_features;
+}
 
 
 //read the data and return a vector of points
@@ -86,9 +121,13 @@ int main(int argc, char *argv[]){
         }
     }
     vector<point> Data = import_data(filename);     //read in data points and store in a vector
-    cout << "Class: " << Data.at(0).classification << endl;
-    cout << "first feature: " << Data.at(0).features.at(0) << endl;
+    vector<int> best_features = forwardSearchAlgorithm(Data);
 
+    cout << "The best features are: ";
+    for(int i = 0; i < best_features.size(); i++){
+        cout << best_features.at(i) << " " ;
+    }
+    cout << endl;
 
 
     return 0;
