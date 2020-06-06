@@ -23,7 +23,7 @@ struct point {
 //need to normalize the untis. Do this by Feature1 = (feature1_value - mean(feature1)) / stddev(feature1)
 //Find the distance with dist between point1 and point2 = sqrt( pow(2,point1(feature1) - point2(feature1)) )
 
-int nearestNeighborClassifier(/* Chosen_Feature_indexes, point*/){
+int nearestNeighborClassifier(vector<int> Chosen_Feature_indexes, point instance, vector<point> test_data){
     //first find all points (is there a better way? yes, remove instances that obviously wont be considered by sorting)
     //normalize data for point and other points
     //then calculate distances and find nearest neighbor
@@ -37,9 +37,28 @@ int nearestNeighborClassifier(/* Chosen_Feature_indexes, point*/){
 
 //Create Leave one out validator (need training data and the classifier)
 float leaveOneOutValidator(vector<point> Data, vector<int> current_features, int feature_to_add){
-    float accuracy = 0.0;
+    double accuracy = 0.0;
+    vector<int> all_features = current_features;
+    all_features.push_back(feature_to_add);
+    int num_points = Data.size();
+    vector<point> test_data = Data;
+    int correct_classification;
+    int guessed_classification;
+    int correct_class_count = 0;
     
+    for(int i = 0; i < num_points; i++){
+       test_data.erase(test_data.begin() + i);  //erase the leave one out point
+       correct_classification = Data.at(i).classification;
+       guessed_classification = nearestNeighborClassifier(all_features, Data.at(i), test_data);
+       if(correct_classification == guessed_classification){
+           correct_class_count++;
+       }
+       test_data = Data;
+    }
 
+    accuracy = static_cast<double>(correct_class_count) / static_cast<double>(num_points);
+
+    cout << "accuracy: " << accuracy << endl;
 
     return accuracy;
 }
