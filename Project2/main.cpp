@@ -35,7 +35,7 @@ int nearestNeighborClassifier(vector<int> Chosen_Feature_indexes, point instance
 
 
 
-//Create Leave one out validator (need training data and the classifier)
+//Create Leave one out validator (need training data and the classifier) 
 float leaveOneOutValidator(vector<point> Data, vector<int> current_features, int feature_to_add){
     double accuracy = 0.0;
     vector<int> all_features = current_features;
