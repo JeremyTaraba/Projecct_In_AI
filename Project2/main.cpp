@@ -63,24 +63,27 @@ int nearestNeighborClassifier(vector<int> Chosen_Feature_indexes, point instance
     //return classification
 
     int closest_point = 0;      //set closest point to a random point in the test_data
+    double min_Dist = abs(instance.features.at(Chosen_Feature_indexes.at(i)) - );
     vector< vector<double> > normalized_features_test;
     vector<double> normalized_features_instance;
     //we need to store x,y and z features in the normalized feature set (columns) go over 1 feature for all points not all features for one point
     double normalized_feature;
 
     //create all normalized features for the instance
-    for(int i = 0; i < instance.features.size(); i++){
-        normalized_feature = (instance.features.at(i) - mean.at(i)) / stddev.at(i);
+    for(int i = 0; i < Chosen_Feature_indexes.size(); i++){
+        normalized_feature = (instance.features.at(Chosen_Feature_indexes.at(i)) - mean.at(Chosen_Feature_indexes.at(i))) / stddev.at(Chosen_Feature_indexes.at(i));
         normalized_features_instance.push_back(normalized_feature);
     }
 
     //create all normalized features for the test set
-    for(int i = 0; i < test_data.at(0).features.size(); i++){
+    for(int i = 0; i < Chosen_Feature_indexes.size(); i++){
         for(int k = 0; k < test_data.size(), k++){
-            normalized_feature = (test_data.at(k).features.at(i) - mean.at(i)) / stddev.at(i);
+            normalized_feature = (test_data.at(k).features.at(Chosen_Feature_indexes.at(i)) - mean.at(Chosen_Feature_indexes.at(i))) / stddev.at(Chosen_Feature_indexes.at(i));
             normalized_features_test.at(k).push_back(normalized_feature);
         }
     }
+
+
 
     
 
