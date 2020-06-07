@@ -55,50 +55,86 @@ vector< vector<double> > mean_and_standardDev(vector<point> Data){
     return mean_stddev;
 }
 
-int nearestNeighborClassifier(vector<int> Chosen_Feature_indexes, point instance, vector<point> test_data, vector<double> mean, vector<double> stddev){
+int nearestNeighborClassifier(vector<int> Chosen_Feature_indexes, point instance, vector<point> test_data, vector<double> min_vect, vector<double> max_vect){
     //first find all points (is there a better way? yes, remove instances that obviously wont be considered by sorting)
     //normalize data for a point is Feature1 = (feature1_value - mean(feature1)) / stddev(feature1)
     //then calculate distances and find nearest neighbor with dist between point1 and point2 = 
     // sqrt( pow(2,point1(feature1) - point2(feature1)) +  pow(2,point1(feature2) - point2(feature2)) + ...)
     //return classification
     
-    vector< vector<double> > normalized_test_vect;
-    vector<double> normalized_test;
-    vector<double> normalized_features_instance;
-    //we need to store x,y and z features in the normalized feature set (columns) go over 1 feature for all points not all features for one point
+    vector<double> normalized_instance;
     double normalized_feature;
+    int closest_point;
+    vector<point> normalized_data;
+    point normalized_point;
+    double min_distance = 1.79769e+308;
+    double temp_min_distance = 0.0;
 
-    //create all normalized features for the instance
-    for(int i = 0; i < Chosen_Feature_indexes.size(); i++){
-        normalized_feature = (instance.features.at(Chosen_Feature_indexes.at(i)) - mean.at(Chosen_Feature_indexes.at(i))) / stddev.at(Chosen_Feature_indexes.at(i));
-        normalized_features_instance.push_back(normalized_feature);
+    for(int i = 0; i < instance.features.size(); i++){
+        normalized_feature = (instance.features.at(i) - min_vect.at(i)) / (max_vect.at(i) - min_vect.at(i));
+        normalized_instance.push_back(normalized_feature);
+        //cout << "normalized instance value for feature " << i+1 << " is "<< normalized_feature << endl;
     }
 
-    //create normalized features for the test set
+    for(int i = 0; i < test_data.size(); i++){
+        for(int k = 0; k < test_data.at(0).features.size(); k++){
+            normalized_feature = (test_data.at(i).features.at(k) - min_vect.at(k)) / (max_vect.at(k) - min_vect.at(k));
+            normalized_point.features.push_back(normalized_feature);
+        }
+        normalized_data.push_back(normalized_point);
+    }
+    //output data points in 2d space
+
+
     for(int i = 0; i < test_data.size(); i++){
         for(int k = 0; k < Chosen_Feature_indexes.size(); k++){
-            normalized_feature = (test_data.at(i).features.at(Chosen_Feature_indexes.at(k)) - mean.at(Chosen_Feature_indexes.at(k))) / stddev.at(Chosen_Feature_indexes.at(k));
-            normalized_test.push_back(normalized_feature);
+            temp_min_distance += pow(2, normalized_instance.at(Chosen_Feature_indexes.at(k)) - normalized_data.at(i).features.at(Chosen_Feature_indexes.at(k)));
         }
-        normalized_test_vect.push_back(normalized_test);
-    }
-
-    //find the nearest neighbor
-    double distance_between = 0;
-    int closest_point = 0;      //set closest point to a random point in the test_data
-    double min_Dist = 2147483647;   //set to highest value possible
-    for(int i = 0; i < test_data.size(); i++){
-        for(int k = 0; k < normalized_features_instance.size(); k++){
-            distance_between += pow(2, normalized_features_instance.at(k) - normalized_test_vect.at(i).at(k) );
-        }
-        distance_between = sqrt(distance_between);
-        if(min_Dist > distance_between){
-            min_Dist = distance_between;
+        temp_min_distance = sqrt(temp_min_distance);
+        cout << "temp_min_distance = " << temp_min_distance << endl;
+        if(temp_min_distance < min_distance){
+            min_distance = temp_min_distance;
             closest_point = i;
         }
-        distance_between = 0;
+        temp_min_distance = 0.0;
     }
 
+    cout << "closest point = " << closest_point << endl;
+
+
+    // vector<point> data;
+    // point normalized_instance;
+    // double distance_between = 0;
+    // int closest_point;
+    // double min_Dist = 2147483647;
+
+    
+    // normalized_features_instance.push_back( (instance.features.at(0) - min) / (max - min)); 
+    // cout << "normalized instance = " << normalized_features_instance.at(0) << endl;
+    
+
+    // for(int i = 0; i < test_data.size(); i++){
+    //     normalized_instance.features.push_back( static_cast<double>( ( static_cast<double>(test_data.at(i).features.at(0)) - static_cast<double>(min) ) / static_cast<double>(max - min)) ); 
+    //     cout << "test features at 0 = " << test_data.at(i).features.at(0);
+    //     data.push_back(normalized_instance);
+    //     cout << " normalized test = " << data.at(i).features.at(0) << endl;
+    // }
+    
+
+    // for(int i = 0; i < test_data.size(); i++){
+    //     for(int k = 0; k < normalized_features_instance.size(); k++){
+    //         distance_between += pow(2, normalized_features_instance.at(k) - data.at(i).features.at(k) );
+    //     }
+    //     distance_between = sqrt(distance_between);
+    //     cout << "data.at(i).features.at(k) = " << data.at(i).features.at(0) << endl;
+    //     if(distance_between < min_Dist){
+    //         min_Dist = distance_between;
+    //         closest_point = i;
+    //         cout << "set closest point as " << i << " distance of " << min_Dist << endl;
+    //     }
+    // }
+    
+    exit(1);
     return test_data.at(closest_point).classification;
 }
 
@@ -106,7 +142,7 @@ int nearestNeighborClassifier(vector<int> Chosen_Feature_indexes, point instance
 
 
 //Create Leave one out validator (need training data and the classifier) 
-float leaveOneOutValidator(vector<point> Data, vector<int> current_features, int feature_to_add, vector<double> mean, vector<double> stddev){
+float leaveOneOutValidator(vector<point> Data, vector<int> current_features, int feature_to_add, vector<double> min, vector<double> max){
     double accuracy = 0.0;
     vector<int> all_features = current_features;
     all_features.push_back(feature_to_add);
@@ -116,10 +152,11 @@ float leaveOneOutValidator(vector<point> Data, vector<int> current_features, int
     int guessed_classification;
     int correct_class_count = 0;
     
+      
     for(int i = 0; i < num_points; i++){
        test_data.erase(test_data.begin() + i);  //erase the leave one out point
        correct_classification = Data.at(i).classification;
-       guessed_classification = nearestNeighborClassifier(all_features, Data.at(i), test_data, mean, stddev);
+       guessed_classification = nearestNeighborClassifier(all_features, Data.at(i), test_data, min, max);
        //cout << "guess classification = " << guessed_classification << endl;
        if(correct_classification == guessed_classification){
            correct_class_count++;
@@ -140,11 +177,32 @@ vector<int> forwardSearchAlgorithm(vector<point> Data){
     double accuracy = 0;
     vector<int> current_set_of_features;
 
-    //find mean and stddev for normalization
-    vector< vector<double> > mean_stddev = mean_and_standardDev(Data);
-    vector<double> mean = mean_stddev.at(0);
-    vector<double> stddev = mean_stddev.at(1);
-    
+    //find min and max for each feature for normalization
+    vector<double> min_vect;
+    vector<double> max_vect;
+    double min_feature = 1.79769e+308;
+    double max_feature = 2.22507e-308;
+
+    for(int i = 0; i < Data.at(0).features.size(); i++){
+        for(int k = 0; k < Data.size(); k++){
+            if(Data.at(k).features.at(i) > max_feature){
+                max_feature = Data.at(k).features.at(i); 
+            }
+            if(Data.at(k).features.at(i) < min_feature){
+                min_feature = Data.at(k).features.at(i); 
+            }
+        }
+        min_vect.push_back(min_feature);
+        max_vect.push_back(max_feature);
+        min_feature = 1.79769e+308;
+        max_feature = 2.22507e-308;
+    }   
+
+    for(int k = 0; k < Data.at(0).features.size(); k++){
+        cout << "for feature " << k + 1 << " min = " << min_vect.at(k) << " max = " << max_vect.at(k) << endl;
+    }
+
+
 
     for(int i = 0; i < Data.at(0).features.size(); i++){
         int feature_to_add;
@@ -152,7 +210,7 @@ vector<int> forwardSearchAlgorithm(vector<point> Data){
         
         for(int k = 0; k < Data.at(0).features.size(); k++){
             if(find(current_set_of_features.begin(), current_set_of_features.end(), k) == current_set_of_features.end()){  //if k is not in current features
-                accuracy = leaveOneOutValidator(Data, current_set_of_features, k, mean, stddev);
+                accuracy = leaveOneOutValidator(Data, current_set_of_features, k, min_vect, max_vect);
                 if(accuracy > best_accuracy_so_far){
                     best_accuracy_so_far = accuracy;
                     feature_to_add = k;
@@ -191,6 +249,7 @@ vector<point> import_data(string filename){
             Data.push_back(instance);       //put finished instance into vector of data
         }
     }
+
 
     return Data;
 }
