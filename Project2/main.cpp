@@ -7,6 +7,7 @@
 #include <sstream>
 #include <algorithm>
 #include <numeric>
+#include <chrono> 
 
 using namespace std;
 
@@ -309,10 +310,27 @@ int main(int argc, char *argv[]){
     cout << "Enter 1 for forward search algorithm and 2 for backwards search algorithm" << endl;
     cin >> algorithm_choice;
     if(algorithm_choice == 1){
+        //start timer
+        chrono::time_point<chrono::system_clock> start, end; 
+        start = chrono::system_clock::now(); 
+
         best_features = forwardSearchAlgorithm(Data);
+
+        //end timer
+        end = chrono::system_clock::now();
+        chrono::duration<double> elapsed_seconds = end - start; 
+        cout << "total time: " << elapsed_seconds.count() << " seconds" << endl; 
     }
     else if(algorithm_choice == 2){
+        //start timer
+        chrono::time_point<chrono::system_clock> start, end; 
+        start = chrono::system_clock::now(); 
+
         best_features = backwardSearchAlgorithm(Data);
+
+        end = chrono::system_clock::now();
+        chrono::duration<double> elapsed_seconds = end - start; 
+        cout << "total time: " << elapsed_seconds.count() << " seconds" << endl; 
     }
     else{
         cout << "not a valid choice" << endl;
