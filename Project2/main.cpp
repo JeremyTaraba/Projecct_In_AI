@@ -135,9 +135,7 @@ vector<int> forwardSearchAlgorithm(vector<point> Data){
         for(int k = 0; k < Data.at(0).features.size(); k++){
             normalized_feature = (Data.at(i).features.at(k) - min_vect.at(k)) / (max_vect.at(k) - min_vect.at(k));
             normalized_point.features.push_back(normalized_feature);
-            //cout << normalized_feature << " ";
         }
-        //cout << endl;
         normalized_data.push_back(normalized_point);
     }
 
@@ -147,11 +145,16 @@ vector<int> forwardSearchAlgorithm(vector<point> Data){
     //forward search algorithm
     for(int i = 0; i < Data.at(0).features.size(); i++){
         int feature_to_add = -1;
-        
     
         for(int k = 0; k < (Data.at(0).features.size() - current_set_of_features.size()); k++){
             if(find(current_set_of_features.begin(), current_set_of_features.end(), k) == current_set_of_features.end()){  //if k is not in current features
                 accuracy = leaveOneOutValidator(Data, current_set_of_features, k, normalized_data);
+                cout << "Using feature(s) {";
+                for(int j = 0; j < current_set_of_features.size(); j++){
+                    cout << current_set_of_features.at(j) + 1 << ",";
+                }
+                cout << k + 1;
+                cout << "} accuracy is " << accuracy * 100.00 << "%" << endl;
                 if(accuracy >= best_accuracy_so_far){
                     best_accuracy_so_far = accuracy;
                     feature_to_add = k;
@@ -159,13 +162,18 @@ vector<int> forwardSearchAlgorithm(vector<point> Data){
             }   
         }
         if(feature_to_add == -1){
+            cout << "Max accuracy has decreased!" << endl << endl;
             break;
         }
-        cout << "adding feature to set, feature is: " << feature_to_add + 1 << " accuracy is " << best_accuracy_so_far * 100.00 << "%" << endl;
         current_set_of_features.push_back(feature_to_add);
+        cout << endl << "Feature set {";
+        for(int j = 0; j < current_set_of_features.size(); j++){
+            cout << current_set_of_features.at(j) + 1 << ",";
+        }
+        cout << "} was best, accuracy is " << best_accuracy_so_far * 100.00 << "%" << endl << endl;
     }
 
-    cout << "best accuracy is: " << best_accuracy_so_far * 100.00 << "%" << endl;
+    cout << "Best accuracy is: " << best_accuracy_so_far * 100.00 << "%" << endl << endl;
 
     return current_set_of_features;
 }
@@ -228,6 +236,12 @@ vector<int> backwardSearchAlgorithm(vector<point> Data){
         for(int k = Data.at(0).features.size()-1; k >= 0; k--){
             if(find(current_set_of_features.begin(), current_set_of_features.end(), k) != current_set_of_features.end()){  //if k is in current features
                 accuracy = leaveOneOutValidator(Data, current_set_of_features, k, normalized_data);
+                cout << "Using feature(s) {";
+                for(int j = 0; j < current_set_of_features.size(); j++){
+                    cout << current_set_of_features.at(j) + 1 << ",";
+                }
+                cout << "} removing " << k + 1;
+                cout <<  " accuracy is " << accuracy * 100.00 << "%" << endl;
                 if(accuracy >= best_accuracy_so_far){
                     best_accuracy_so_far = accuracy;
                     feature_to_subtract = k;
@@ -235,13 +249,19 @@ vector<int> backwardSearchAlgorithm(vector<point> Data){
             }   
         }
         if(feature_to_subtract == -1){
+            cout << "Max accuracy has decreased!" << endl << endl;
             break;
         }
-        cout << "removing feature from set, feature is: " << feature_to_subtract + 1 << " accuracy is " << best_accuracy_so_far * 100.00 << "%" << endl;
+        cout << "Removing feature " << feature_to_subtract + 1 << " from set, " << "accuracy is " << best_accuracy_so_far * 100.00 << "%" << endl;
         current_set_of_features.erase(remove(current_set_of_features.begin(), current_set_of_features.end(), feature_to_subtract), current_set_of_features.end());
+        cout << "Feature set {";
+        for(int j = 0; j < current_set_of_features.size(); j++){
+            cout << current_set_of_features.at(j) + 1 << ",";
+        }
+        cout << "} was best, accuracy is " << best_accuracy_so_far * 100.00 << "%" << endl << endl;
     }
 
-    cout << "best accuracy is: " << best_accuracy_so_far * 100.00 << "%" << endl;
+    cout << "Best accuracy is: " << best_accuracy_so_far * 100.00 << "%" << endl;
     return current_set_of_features;
 }
 
@@ -283,7 +303,7 @@ int main(int argc, char *argv[]){
     //First read in data, this is your training set
     //using leave one out validator, nearest neighbor classifier, and forward search algorithm, find the highest accuracy of feature combinations
     //return the best features.
-    //cout << "The purpose of this program is to take in a file of classified data points as input and output the best combination of features" << endl;
+    cout << "Welcome to Jeremy Taraba's Feature Selection Algorithm" << endl;
 
     string filename;
     if(argc == 2){
@@ -291,7 +311,8 @@ int main(int argc, char *argv[]){
     }
     else{
         if(argc < 2){
-            cout << "ERROR: Not enough arguments, include a file of data points" << endl;
+            cout << "Type in the name of the file to test: " << endl;
+            cin >> filename;
         }
         else if(argc > 2){
             cout << "ERROR: Too many arguments, only include one file of data points" << endl;
@@ -300,9 +321,14 @@ int main(int argc, char *argv[]){
     int algorithm_choice;
     vector<int> best_features;
     vector<point> Data = import_data(filename);     //read in data points and store in a vector
-    cout << "Enter 1 for forward search algorithm and 2 for backwards search algorithm" << endl;
+
+    cout << endl <<"This dataset has "<< Data.at(0).features.size() << " features (not including the class attribute), with "<< Data.size() << " instances." << endl << endl;
+
+    cout << "Enter 1 for Forward search algorithm and 2 for Backwards search algorithm" << endl;
     cin >> algorithm_choice;
+   
     if(algorithm_choice == 1){
+         cout << "Starting search" << endl << endl;
         //start timer
         chrono::time_point<chrono::system_clock> start, end; 
         start = chrono::system_clock::now(); 
@@ -312,9 +338,10 @@ int main(int argc, char *argv[]){
         //end timer
         end = chrono::system_clock::now();
         chrono::duration<double> elapsed_seconds = end - start; 
-        cout << "total time: " << elapsed_seconds.count() << " seconds" << endl; 
+        cout << "total time: " << elapsed_seconds.count() << " seconds" << endl << endl; 
     }
     else if(algorithm_choice == 2){
+         cout << "starting search" << endl << endl;
         //start timer
         chrono::time_point<chrono::system_clock> start, end; 
         start = chrono::system_clock::now(); 
@@ -323,7 +350,7 @@ int main(int argc, char *argv[]){
 
         end = chrono::system_clock::now();
         chrono::duration<double> elapsed_seconds = end - start; 
-        cout << "total time: " << elapsed_seconds.count() << " seconds" << endl; 
+        cout << "total time: " << elapsed_seconds.count() << " seconds" << endl << endl; 
     }
     else{
         cout << "not a valid choice" << endl;
