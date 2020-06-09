@@ -237,6 +237,7 @@ vector<int> backwardSearchAlgorithm(vector<point> Data){
         if(feature_to_subtract == -1){
             break;
         }
+        cout << "removing feature from set, feature is: " << feature_to_subtract + 1 << " accuracy is " << best_accuracy_so_far * 100.00 << "%" << endl;
         current_set_of_features.erase(remove(current_set_of_features.begin(), current_set_of_features.end(), feature_to_subtract), current_set_of_features.end());
     }
 
