@@ -8,10 +8,6 @@
 #include <algorithm>
 #include <numeric>
 
-//just for testing
-#include <stdlib.h>     /* srand, rand */
-#include <time.h>       /* time */
-
 using namespace std;
 
 struct point {
@@ -62,12 +58,19 @@ int nearestNeighborClassifier(vector<int> Chosen_Feature_indexes, int instance_i
 
 
 
-
 //Create Leave one out validator (need training data and the classifier) 
 float leaveOneOutValidator(vector<point> Data, vector<int> current_features, int feature_to_add, vector<point> normalized_data){
     double accuracy = 0.0;
     vector<int> all_features = current_features;
-    all_features.push_back(feature_to_add);
+
+    //for forwards search algorithm to work
+    if(find(all_features.begin(), all_features.end(), feature_to_add) == all_features.end()){   //if the feature to add is not already in all features
+        all_features.push_back(feature_to_add);
+    }
+    //for backwards search to work
+    else{                                                                                       //if feature to add is already in all features
+        all_features.erase(remove(all_features.begin(), all_features.end(), feature_to_add), all_features.end());
+    }
     int num_points = Data.size();
     vector<point> test_data = Data;
     int correct_classification;
@@ -94,7 +97,7 @@ float leaveOneOutValidator(vector<point> Data, vector<int> current_features, int
 }
 
 
-//Create Forward search algorithm (adds or removes features and assigns accuracy score to the combinations and chooses highest one)
+//Create forward and backwards search algorithm (adds or removes features and assigns accuracy score to the combinations and chooses highest one)
 vector<int> forwardSearchAlgorithm(vector<point> Data){
     double accuracy = 0.0;
     vector<int> current_set_of_features;
@@ -120,9 +123,81 @@ vector<int> forwardSearchAlgorithm(vector<point> Data){
         max_feature = 2.22507e-308;
     }   
 
-    // for(int k = 0; k < Data.at(0).features.size(); k++){
-    //     cout << "for feature " << k + 1 << " min = " << min_vect.at(k) << " max = " << max_vect.at(k) << endl;
-    // }
+    //normalized the data for nearest neighbor
+    double normalized_feature;
+    vector<point> normalized_data;
+    
+
+    for(int i = 0; i < Data.size(); i++){
+        point normalized_point;
+        //cout << "normalized features: " ;
+        for(int k = 0; k < Data.at(0).features.size(); k++){
+            normalized_feature = (Data.at(i).features.at(k) - min_vect.at(k)) / (max_vect.at(k) - min_vect.at(k));
+            normalized_point.features.push_back(normalized_feature);
+            //cout << normalized_feature << " ";
+        }
+        //cout << endl;
+        normalized_data.push_back(normalized_point);
+    }
+
+    
+    double highest_accuracy = 0.0;
+    vector<int> best_set;
+
+    //forward search algorithm
+    for(int i = 0; i < Data.at(0).features.size(); i++){
+        int feature_to_add = -1;
+        double best_accuracy_so_far = 0.0;
+    
+        for(int k = 0; k < (Data.at(0).features.size() - current_set_of_features.size()); k++){
+            if(find(current_set_of_features.begin(), current_set_of_features.end(), k) == current_set_of_features.end()){  //if k is not in current features
+                accuracy = leaveOneOutValidator(Data, current_set_of_features, k, normalized_data);
+                if(accuracy > best_accuracy_so_far){
+                    best_accuracy_so_far = accuracy;
+                    feature_to_add = k;
+                }
+                if(accuracy >= highest_accuracy){
+                    highest_accuracy = accuracy;
+                    best_set = current_set_of_features;
+                    best_set.push_back(k);
+                }
+            }   
+        }
+        if(best_accuracy_so_far == highest_accuracy){
+            cout << "adding feature to set, feature is : " << feature_to_add + 1 << " accuracy is " << best_accuracy_so_far * 100.00 << "%" << endl;
+        }
+        current_set_of_features.push_back(feature_to_add);
+    }
+
+    cout << "best accuracy is: " << highest_accuracy * 100.00 << "%" << endl;
+
+    return best_set;
+}
+
+vector<int> backwardSearchAlgorithm(vector<point> Data){
+    double accuracy = 0.0;
+    vector<int> current_set_of_features;
+
+    //find min and max for each feature for normalization
+    vector<double> min_vect;
+    vector<double> max_vect;
+    double min_feature = 1.79769e+308;
+    double max_feature = 2.22507e-308;
+
+    for(int i = 0; i < Data.at(0).features.size(); i++){
+        for(int k = 0; k < Data.size(); k++){
+            if(Data.at(k).features.at(i) > max_feature){
+                max_feature = Data.at(k).features.at(i); 
+            }
+            if(Data.at(k).features.at(i) < min_feature){
+                min_feature = Data.at(k).features.at(i); 
+            }
+        }
+        min_vect.push_back(min_feature);
+        max_vect.push_back(max_feature);
+        min_feature = 1.79769e+308;
+        max_feature = 2.22507e-308;
+    }   
 
     //normalized the data for nearest neighbor
     double normalized_feature;
@@ -141,29 +216,39 @@ vector<int> forwardSearchAlgorithm(vector<point> Data){
         normalized_data.push_back(normalized_point);
     }
 
-
-    double best_accuracy_so_far = 0.0;
-
-    for(int i = 0; i < Data.at(0).features.size(); i++){
-        int feature_to_add = -1;
     
-        for(int k = 0; k < Data.at(0).features.size(); k++){
-            if(find(current_set_of_features.begin(), current_set_of_features.end(), k) == current_set_of_features.end()){  //if k is not in current features
+
+
+    //backward search algorithm
+    double highest_accuracy = 0.0;
+    vector<int> best_set;
+    for(int i = 0; i < Data.at(0).features.size(); i++){    //fill set with all features
+        current_set_of_features.push_back(i);
+    }
+
+    for(int i = Data.at(0).features.size()-1; i >= 0; i--){
+        int feature_to_subtract = -1;
+        double best_accuracy_so_far = 0.0;
+    
+        for(int k = Data.at(0).features.size()-1; k >= 0; k--){
+            if(find(current_set_of_features.begin(), current_set_of_features.end(), k) != current_set_of_features.end()){  //if k is in current features
                 accuracy = leaveOneOutValidator(Data, current_set_of_features, k, normalized_data);
                 if(accuracy > best_accuracy_so_far){
                     best_accuracy_so_far = accuracy;
-                    feature_to_add = k;
+                    feature_to_subtract = k;
+                }
+                if(accuracy >= highest_accuracy){
+                    highest_accuracy = accuracy;
+                    current_set_of_features.erase(remove(current_set_of_features.begin(), current_set_of_features.end(), feature_to_subtract), current_set_of_features.end());
+                    best_set = current_set_of_features;
                 }
             }   
         }
-        if(feature_to_add != -1){
-            cout << "adding feature to set, feature is : " << feature_to_add + 1 << " accuracy is " << best_accuracy_so_far * 100.00 << "%" << endl;
-            current_set_of_features.push_back(feature_to_add);
-        }
+        current_set_of_features.erase(remove(current_set_of_features.begin(), current_set_of_features.end(), feature_to_subtract), current_set_of_features.end());
     }
 
-
-    return current_set_of_features;
+    cout << "best accuracy is: " << highest_accuracy * 100.00 << "%" << endl;
+    return best_set;
 }
 
 
@@ -218,8 +303,23 @@ int main(int argc, char *argv[]){
             cout << "ERROR: Too many arguments, only include one file of data points" << endl;
         }
     }
+    int algorithm_choice;
+    vector<int> best_features;
     vector<point> Data = import_data(filename);     //read in data points and store in a vector
-    vector<int> best_features = forwardSearchAlgorithm(Data);
+    cout << "Enter 1 for forward search algorithm and 2 for backwards search algorithm" << endl;
+    cin >> algorithm_choice;
+    if(algorithm_choice == 1){
+        best_features = forwardSearchAlgorithm(Data);
+    }
+    else if(algorithm_choice == 2){
+        best_features = backwardSearchAlgorithm(Data);
+    }
+    else{
+        cout << "not a valid choice" << endl;
+        return 0;
+    }
+    
+     
 
     cout << "The best features are: ";
     for(int i = 0; i < best_features.size(); i++){
