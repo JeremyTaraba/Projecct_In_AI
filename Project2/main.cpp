@@ -142,38 +142,34 @@ vector<int> forwardSearchAlgorithm(vector<point> Data){
     }
 
     
-    double highest_accuracy = 0.0;
-    vector<int> best_set;
+    double best_accuracy_so_far = 0.0;
 
     //forward search algorithm
     for(int i = 0; i < Data.at(0).features.size(); i++){
         int feature_to_add = -1;
-        double best_accuracy_so_far = 0.0;
+        
     
         for(int k = 0; k < (Data.at(0).features.size() - current_set_of_features.size()); k++){
             if(find(current_set_of_features.begin(), current_set_of_features.end(), k) == current_set_of_features.end()){  //if k is not in current features
                 accuracy = leaveOneOutValidator(Data, current_set_of_features, k, normalized_data);
-                if(accuracy > best_accuracy_so_far){
+                if(accuracy >= best_accuracy_so_far){
                     best_accuracy_so_far = accuracy;
                     feature_to_add = k;
                 }
-                if(accuracy >= highest_accuracy){
-                    highest_accuracy = accuracy;
-                    best_set = current_set_of_features;
-                    best_set.push_back(k);
-                }
             }   
         }
-        if(best_accuracy_so_far == highest_accuracy){
-            cout << "adding feature to set, feature is : " << feature_to_add + 1 << " accuracy is " << best_accuracy_so_far * 100.00 << "%" << endl;
+        if(feature_to_add == -1){
+            break;
         }
+        cout << "adding feature to set, feature is: " << feature_to_add + 1 << " accuracy is " << best_accuracy_so_far * 100.00 << "%" << endl;
         current_set_of_features.push_back(feature_to_add);
     }
 
-    cout << "best accuracy is: " << highest_accuracy * 100.00 << "%" << endl;
+    cout << "best accuracy is: " << best_accuracy_so_far * 100.00 << "%" << endl;
 
-    return best_set;
+    return current_set_of_features;
 }
+
 
 vector<int> backwardSearchAlgorithm(vector<point> Data){
     double accuracy = 0.0;
@@ -219,37 +215,33 @@ vector<int> backwardSearchAlgorithm(vector<point> Data){
 
     
 
-
     //backward search algorithm
-    double highest_accuracy = 0.0;
-    vector<int> best_set;
+    double best_accuracy_so_far = 0.0;
     for(int i = 0; i < Data.at(0).features.size(); i++){    //fill set with all features
         current_set_of_features.push_back(i);
     }
 
     for(int i = Data.at(0).features.size()-1; i >= 0; i--){
         int feature_to_subtract = -1;
-        double best_accuracy_so_far = 0.0;
+     
     
         for(int k = Data.at(0).features.size()-1; k >= 0; k--){
             if(find(current_set_of_features.begin(), current_set_of_features.end(), k) != current_set_of_features.end()){  //if k is in current features
                 accuracy = leaveOneOutValidator(Data, current_set_of_features, k, normalized_data);
-                if(accuracy > best_accuracy_so_far){
+                if(accuracy >= best_accuracy_so_far){
                     best_accuracy_so_far = accuracy;
                     feature_to_subtract = k;
                 }
-                if(accuracy >= highest_accuracy){
-                    highest_accuracy = accuracy;
-                    current_set_of_features.erase(remove(current_set_of_features.begin(), current_set_of_features.end(), feature_to_subtract), current_set_of_features.end());
-                    best_set = current_set_of_features;
-                }
             }   
+        }
+        if(feature_to_subtract == -1){
+            break;
         }
         current_set_of_features.erase(remove(current_set_of_features.begin(), current_set_of_features.end(), feature_to_subtract), current_set_of_features.end());
     }
 
-    cout << "best accuracy is: " << highest_accuracy * 100.00 << "%" << endl;
-    return best_set;
+    cout << "best accuracy is: " << best_accuracy_so_far * 100.00 << "%" << endl;
+    return current_set_of_features;
 }
 
 
